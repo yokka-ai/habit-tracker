@@ -1,4 +1,11 @@
+import { useState } from "react";
+import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
+import { HabitList } from "./features/habits/HabitList.tsx";
+import { createHabit, type Habit } from "./lib/habit.ts";
+
 export function App() {
+  const [habits, setHabits] = useState<Habit[]>([]);
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="border-b border-stone-200 bg-white">
@@ -11,18 +18,23 @@ export function App() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-12">
-        <section
-          aria-labelledby="empty-title"
-          className="rounded-xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center"
-        >
-          <h2 id="empty-title" className="text-lg font-medium">
-            No habits yet
-          </h2>
-          <p className="mt-2 text-sm text-stone-600">
-            Habits you track will show up here. This app is being built live by AI coding agents,
-            one ticket at a time.
-          </p>
-        </section>
+        <AddHabitForm onAdd={(name) => setHabits((current) => [...current, createHabit(name)])} />
+        {habits.length === 0 ? (
+          <section
+            aria-labelledby="empty-title"
+            className="rounded-xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center"
+          >
+            <h2 id="empty-title" className="text-lg font-medium">
+              No habits yet
+            </h2>
+            <p className="mt-2 text-sm text-stone-600">
+              Habits you track will show up here. This app is being built live by AI coding agents,
+              one ticket at a time.
+            </p>
+          </section>
+        ) : (
+          <HabitList habits={habits} />
+        )}
       </main>
     </div>
   );
