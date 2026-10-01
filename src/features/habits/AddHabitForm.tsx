@@ -33,7 +33,7 @@ export function AddHabitForm({ onAdd }: Props) {
           placeholder="Drink water"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? "habit-name-error" : undefined}
-          className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600"
+          className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600"
         />
         <button
           type="submit"
@@ -43,7 +43,11 @@ export function AddHabitForm({ onAdd }: Props) {
         </button>
       </div>
       {error ? (
-        <p id="habit-name-error" role="alert" className="mt-2 text-sm text-red-700">
+        <p
+          id="habit-name-error"
+          role="alert"
+          className="mt-2 text-sm text-red-700 dark:text-red-400"
+        >
           {error}
         </p>
       ) : null}
