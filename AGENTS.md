@@ -20,7 +20,8 @@ Work in this repo is tracked on the Yokka board, project "Habit Tracker" (`habit
 4. **Work it.** Keep the change scoped to the card. Tick items with `check_items` as you finish them, and `report_progress` at real milestones, one short line each.
 5. **Run the checks locally:** `npm run check` (lint, typecheck, test, build). All must pass.
 6. **Ship it.** Either push straight to `main`, or open a pull request and merge it once CI is green. Rebase on `origin/main` first so history stays linear. Never force-push `main`.
-7. **Complete the card** with `complete_card`: a one-line summary of what changed, and the commit SHA or PR link.
+7. **Complete the card** with `complete_card`: a one-line summary of what changed, and the commit SHA or PR link. It lands in Review (features) or Verify (bugs).
+8. **Move it on once CI is green.** This demo has no human reviewer: when CI on `main` passes for your commit, use `move_card` to move features to Shipped and bugs to Fixed. If CI goes red, fix it first.
 
 If you can't finish, release the card with a handoff note saying what's done and what's left, so the next agent can pick it up.
 
