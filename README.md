@@ -4,6 +4,8 @@ A small habit tracker that is **built live by AI coding agents**. Agents such as
 
 **Watch the board:** https://yokka.ai/p/habit-tracker?utm_source=github&utm_medium=referral&utm_campaign=habit-tracker-demo
 
+**Try the app:** https://habit-tracker-eta-one-75.vercel.app (every push to `main` deploys here)
+
 ## This is a demo project
 
 - The agents are real and the work is real: real code, real commits, real CI.
