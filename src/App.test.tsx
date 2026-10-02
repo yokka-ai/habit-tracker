@@ -10,7 +10,7 @@ describe("App", () => {
 
   it("shows the empty state when there are no habits", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "No habits yet" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Start your first habit" })).toBeInTheDocument();
   });
 });
 
@@ -22,14 +22,25 @@ describe("adding habits", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
     expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Read 10 pages");
-    expect(screen.queryByRole("heading", { name: "No habits yet" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Start your first habit" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the empty state when the name is blank", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "No habits yet" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Start your first habit" })).toBeInTheDocument();
+  });
+});
+
+describe("starter habits", () => {
+  it("adds a habit when a suggestion is clicked and hides the empty state", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Walk 20 minutes" }));
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Walk 20 minutes");
+    expect(screen.queryByRole("list", { name: "Starter habits" })).not.toBeInTheDocument();
   });
 });
 
