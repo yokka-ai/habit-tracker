@@ -1,10 +1,13 @@
 import { type FormEvent, useState } from "react";
+import { normalizeCategory } from "../../lib/category.ts";
 import { MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
+import { CategoryInput } from "./CategoryInput.tsx";
 
-type Props = { onAdd: (name: string) => void };
+type Props = { onAdd: (name: string, category?: string) => void };
 
 export function AddHabitForm({ onAdd }: Props) {
   const [value, setValue] = useState("");
+  const [category, setCategory] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent) {
@@ -14,8 +17,9 @@ export function AddHabitForm({ onAdd }: Props) {
       setError(result.error);
       return;
     }
-    onAdd(result.name);
+    onAdd(result.name, normalizeCategory(category));
     setValue("");
+    setCategory("");
     setError(null);
   }
 
@@ -34,6 +38,12 @@ export function AddHabitForm({ onAdd }: Props) {
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? "habit-name-error" : undefined}
           className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600"
+        />
+        <CategoryInput
+          id="habit-category"
+          value={category}
+          onChange={setCategory}
+          className="w-32 rounded-lg border border-stone-300 bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500"
         />
         <button
           type="submit"

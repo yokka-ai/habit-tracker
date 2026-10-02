@@ -25,7 +25,7 @@ describe("validateHabitName", () => {
 
 describe("createHabit", () => {
   it("creates a habit with a unique id and timestamp", () => {
-    const a = createHabit("Read 10 pages", new Date("2026-01-02T03:04:05Z"));
+    const a = createHabit("Read 10 pages", undefined, new Date("2026-01-02T03:04:05Z"));
     const b = createHabit("Read 10 pages");
     expect(a.name).toBe("Read 10 pages");
     expect(a.createdAt).toBe("2026-01-02T03:04:05.000Z");

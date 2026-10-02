@@ -2,6 +2,7 @@ export type Habit = {
   id: string;
   name: string;
   createdAt: string;
+  category?: string;
 };
 
 export const MAX_HABIT_NAME_LENGTH = 60;
@@ -19,8 +20,23 @@ export function validateHabitName(input: string): NameResult {
   return { ok: true, name };
 }
 
-export function createHabit(name: string, now: Date = new Date()): Habit {
-  return { id: crypto.randomUUID(), name, createdAt: now.toISOString() };
+export function createHabit(name: string, category?: string, now: Date = new Date()): Habit {
+  const habit: Habit = { id: crypto.randomUUID(), name, createdAt: now.toISOString() };
+  return category ? { ...habit, category } : habit;
+}
+
+export function editHabit(
+  habits: Habit[],
+  id: string,
+  changes: { name: string; category?: string },
+): Habit[] {
+  return habits.map((habit) => {
+    if (habit.id !== id) return habit;
+    const { category: _old, ...rest } = habit;
+    return changes.category
+      ? { ...rest, name: changes.name, category: changes.category }
+      : { ...rest, name: changes.name };
+  });
 }
 
 export function renameHabit(habits: Habit[], id: string, name: string): Habit[] {

@@ -9,7 +9,7 @@ describe("AddHabitForm", () => {
     const input = screen.getByRole("textbox", { name: "Habit name" });
     fireEvent.change(input, { target: { value: "  Drink water  " } });
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    expect(onAdd).toHaveBeenCalledWith("Drink water");
+    expect(onAdd).toHaveBeenCalledWith("Drink water", undefined);
     expect(input).toHaveValue("");
   });
 
@@ -22,5 +22,18 @@ describe("AddHabitForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
     expect(onAdd).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a habit name.");
+  });
+
+  it("passes a trimmed category along and clears it", () => {
+    const onAdd = vi.fn();
+    render(<AddHabitForm onAdd={onAdd} />);
+    const category = screen.getByRole("combobox", { name: "Category (optional)" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.change(category, { target: { value: " Health " } });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(onAdd).toHaveBeenCalledWith("Drink water", "Health");
+    expect(category).toHaveValue("");
   });
 });

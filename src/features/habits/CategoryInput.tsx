@@ -1,0 +1,39 @@
+import type { KeyboardEvent } from "react";
+import { useId } from "react";
+import { MAX_CATEGORY_LENGTH, PRESET_CATEGORIES } from "../../lib/category.ts";
+
+type Props = {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  onKeyDown?: (event: KeyboardEvent) => void;
+  className: string;
+};
+
+/** Free text with the preset categories offered as suggestions, so custom ones work too. */
+export function CategoryInput({ id, value, onChange, onKeyDown, className }: Props) {
+  const listId = useId();
+  return (
+    <>
+      <label htmlFor={id} className="sr-only">
+        Category (optional)
+      </label>
+      <input
+        id={id}
+        type="text"
+        list={listId}
+        value={value}
+        maxLength={MAX_CATEGORY_LENGTH}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={onKeyDown}
+        placeholder="Category"
+        className={className}
+      />
+      <datalist id={listId}>
+        {PRESET_CATEGORIES.map((preset) => (
+          <option key={preset} value={preset} />
+        ))}
+      </datalist>
+    </>
+  );
+}

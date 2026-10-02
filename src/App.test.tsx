@@ -124,3 +124,80 @@ describe("editing and deleting habits", () => {
     expect(screen.getByRole("heading", { name: "Start your first habit" })).toBeInTheDocument();
   });
 });
+
+describe("habit categories", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  function addHabit(name: string, category = "") {
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: name },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Category (optional)" }), {
+      target: { value: category },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+  }
+
+  const chip = (name: string) => screen.getByRole("button", { name });
+
+  it("shows no filter chips while no habit has a category", () => {
+    render(<App />);
+    addHabit("Drink water");
+    expect(screen.queryByRole("group", { name: "Filter by category" })).not.toBeInTheDocument();
+  });
+
+  it("filters by category and keeps uncategorised habits under All only", () => {
+    render(<App />);
+    addHabit("Drink water", "Health");
+    addHabit("Read 10 pages", "Mind");
+    addHabit("Water the plants");
+    expect(chip("All")).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(chip("Mind"));
+    const list = screen.getByRole("list", { name: "Habits" });
+    expect(list).toHaveTextContent("Read 10 pages");
+    expect(list).not.toHaveTextContent("Drink water");
+    expect(list).not.toHaveTextContent("Water the plants");
+    fireEvent.click(chip("All"));
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Water the plants");
+  });
+
+  it("remembers the chosen filter across visits", () => {
+    window.localStorage.setItem("habit-tracker:category-filter", "Mind");
+    const { unmount } = render(<App />);
+    addHabit("Drink water", "Health");
+    addHabit("Read 10 pages", "Mind");
+    expect(chip("Mind")).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(chip("Health"));
+    unmount();
+    render(<App />);
+    expect(window.localStorage.getItem("habit-tracker:category-filter")).toBe("Health");
+  });
+
+  it("falls back to All when the filtered category disappears", () => {
+    render(<App />);
+    addHabit("Drink water", "Health");
+    addHabit("Tidy desk", "Zen");
+    fireEvent.click(chip("Zen"));
+    fireEvent.click(screen.getByRole("button", { name: "Delete Tidy desk" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm delete Tidy desk" }));
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
+  });
+
+  it("sets and clears a category when editing", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    const inputs = screen.getAllByRole("combobox", { name: "Category (optional)" });
+    fireEvent.change(inputs[inputs.length - 1] as HTMLElement, { target: { value: "Health" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(chip("Health")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    const again = screen.getAllByRole("combobox", { name: "Category (optional)" });
+    fireEvent.change(again[again.length - 1] as HTMLElement, { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(screen.queryByRole("button", { name: "Health" })).not.toBeInTheDocument();
+  });
+});

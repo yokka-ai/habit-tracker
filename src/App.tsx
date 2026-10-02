@@ -1,17 +1,36 @@
 import { useState } from "react";
 import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
+import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
 import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
-import { createHabit, type Habit, removeHabit, renameHabit } from "./lib/habit.ts";
+import {
+  categoriesInUse,
+  effectiveFilter,
+  filterHabits,
+  readStoredCategoryFilter,
+  storeCategoryFilter,
+} from "./lib/category.ts";
+import { createHabit, editHabit, type Habit, removeHabit } from "./lib/habit.ts";
 
 export function App() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const theme = useTheme();
-  const addHabit = (name: string) => setHabits((current) => [...current, createHabit(name)]);
+  const [storedFilter, setStoredFilter] = useState(() =>
+    readStoredCategoryFilter(window.localStorage),
+  );
+  const addHabit = (name: string, category?: string) =>
+    setHabits((current) => [...current, createHabit(name, category)]);
 
-  const rename = (id: string, name: string) => setHabits((c) => renameHabit(c, id, name));
+  const edit = (id: string, name: string, category?: string) =>
+    setHabits((c) => editHabit(c, id, { name, category }));
+  const categories = categoriesInUse(habits);
+  const filter = effectiveFilter(habits, storedFilter);
+  const selectFilter = (category: string) => {
+    setStoredFilter(category);
+    storeCategoryFilter(window.localStorage, category);
+  };
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
 
   return (
@@ -31,7 +50,12 @@ export function App() {
         {habits.length === 0 ? (
           <EmptyState onPick={addHabit} />
         ) : (
-          <HabitList habits={habits} onRename={rename} onDelete={remove} />
+          <>
+            {categories.length > 0 ? (
+              <CategoryFilter categories={categories} selected={filter} onSelect={selectFilter} />
+            ) : null}
+            <HabitList habits={filterHabits(habits, filter)} onEdit={edit} onDelete={remove} />
+          </>
         )}
       </main>
     </div>
