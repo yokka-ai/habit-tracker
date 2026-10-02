@@ -22,3 +22,11 @@ export function validateHabitName(input: string): NameResult {
 export function createHabit(name: string, now: Date = new Date()): Habit {
   return { id: crypto.randomUUID(), name, createdAt: now.toISOString() };
 }
+
+export function renameHabit(habits: Habit[], id: string, name: string): Habit[] {
+  return habits.map((habit) => (habit.id === id ? { ...habit, name } : habit));
+}
+
+export function removeHabit(habits: Habit[], id: string): Habit[] {
+  return habits.filter((habit) => habit.id !== id);
+}

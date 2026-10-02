@@ -4,12 +4,15 @@ import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
-import { createHabit, type Habit } from "./lib/habit.ts";
+import { createHabit, type Habit, removeHabit, renameHabit } from "./lib/habit.ts";
 
 export function App() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const theme = useTheme();
   const addHabit = (name: string) => setHabits((current) => [...current, createHabit(name)]);
+
+  const rename = (id: string, name: string) => setHabits((c) => renameHabit(c, id, name));
+  const remove = (id: string) => setHabits((c) => removeHabit(c, id));
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
@@ -25,7 +28,11 @@ export function App() {
 
       <main className="mx-auto max-w-3xl px-4 py-12">
         <AddHabitForm onAdd={addHabit} />
-        {habits.length === 0 ? <EmptyState onPick={addHabit} /> : <HabitList habits={habits} />}
+        {habits.length === 0 ? (
+          <EmptyState onPick={addHabit} />
+        ) : (
+          <HabitList habits={habits} onRename={rename} onDelete={remove} />
+        )}
       </main>
     </div>
   );

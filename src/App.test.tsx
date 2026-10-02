@@ -67,3 +67,60 @@ describe("theme toggle", () => {
     expect(document.documentElement).toHaveClass("dark");
   });
 });
+
+describe("editing and deleting habits", () => {
+  function addHabit(name: string) {
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: name },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+  }
+
+  it("renames a habit with Enter", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    const input = screen.getByRole("textbox", { name: "Rename habit" });
+    fireEvent.change(input, { target: { value: "  Drink more water " } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink more water");
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+  });
+
+  it("refuses an empty rename", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    const input = screen.getByRole("textbox", { name: "Rename habit" });
+    fireEvent.change(input, { target: { value: " " } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a habit name.");
+  });
+
+  it("cancels a rename with Escape", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    const input = screen.getByRole("textbox", { name: "Rename habit" });
+    fireEvent.change(input, { target: { value: "Nope" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
+  });
+
+  it("asks before deleting and can be cancelled", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Delete Drink water" }));
+    fireEvent.click(screen.getByRole("button", { name: "Keep" }));
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
+  });
+
+  it("deletes a habit once confirmed and shows the empty state", () => {
+    render(<App />);
+    addHabit("Drink water");
+    fireEvent.click(screen.getByRole("button", { name: "Delete Drink water" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm delete Drink water" }));
+    expect(screen.queryByRole("list", { name: "Habits" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Start your first habit" })).toBeInTheDocument();
+  });
+});
