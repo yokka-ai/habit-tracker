@@ -9,7 +9,10 @@ describe("AddHabitForm", () => {
     const input = screen.getByRole("textbox", { name: "Habit name" });
     fireEvent.change(input, { target: { value: "  Drink water  " } });
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    expect(onAdd).toHaveBeenCalledWith("Drink water", undefined);
+    expect(onAdd).toHaveBeenCalledWith("Drink water", undefined, {
+      color: "emerald",
+      emoji: undefined,
+    });
     expect(input).toHaveValue("");
   });
 
@@ -33,7 +36,23 @@ describe("AddHabitForm", () => {
     });
     fireEvent.change(category, { target: { value: " Health " } });
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    expect(onAdd).toHaveBeenCalledWith("Drink water", "Health");
+    expect(onAdd).toHaveBeenCalledWith("Drink water", "Health", {
+      color: "emerald",
+      emoji: undefined,
+    });
     expect(category).toHaveValue("");
+  });
+
+  it("passes the picked colour and emoji", () => {
+    const onAdd = vi.fn();
+    render(<AddHabitForm onAdd={onAdd} />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.click(screen.getByRole("radio", { name: "Purple" }));
+    fireEvent.click(screen.getByRole("button", { name: "Emoji 💧" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(onAdd).toHaveBeenCalledWith("Drink water", undefined, { color: "violet", emoji: "💧" });
+    expect(screen.getByRole("radio", { name: "Green" })).toBeChecked();
   });
 });

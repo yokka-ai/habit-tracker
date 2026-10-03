@@ -1,10 +1,16 @@
+import { DEFAULT_COLOR, type HabitColor } from "./appearance.ts";
+
 export type Habit = {
   id: string;
   name: string;
   createdAt: string;
   category?: string;
   archived?: boolean;
+  color: HabitColor;
+  emoji?: string;
 };
+
+export type Appearance = { color: HabitColor; emoji?: string };
 
 export const MAX_HABIT_NAME_LENGTH = 60;
 
@@ -21,22 +27,33 @@ export function validateHabitName(input: string): NameResult {
   return { ok: true, name };
 }
 
-export function createHabit(name: string, category?: string, now: Date = new Date()): Habit {
-  const habit: Habit = { id: crypto.randomUUID(), name, createdAt: now.toISOString() };
-  return category ? { ...habit, category } : habit;
+export function createHabit(
+  name: string,
+  category?: string,
+  appearance: Appearance = { color: DEFAULT_COLOR },
+  now: Date = new Date(),
+): Habit {
+  const habit: Habit = {
+    id: crypto.randomUUID(),
+    name,
+    createdAt: now.toISOString(),
+    color: appearance.color,
+  };
+  const withEmoji = appearance.emoji ? { ...habit, emoji: appearance.emoji } : habit;
+  return category ? { ...withEmoji, category } : withEmoji;
 }
 
 export function editHabit(
   habits: Habit[],
   id: string,
-  changes: { name: string; category?: string },
+  changes: { name: string; category?: string; color?: HabitColor; emoji?: string },
 ): Habit[] {
   return habits.map((habit) => {
     if (habit.id !== id) return habit;
-    const { category: _old, ...rest } = habit;
-    return changes.category
-      ? { ...rest, name: changes.name, category: changes.category }
-      : { ...rest, name: changes.name };
+    const { category: _category, emoji: _emoji, ...rest } = habit;
+    const edited: Habit = { ...rest, name: changes.name, color: changes.color ?? habit.color };
+    const withEmoji = changes.emoji ? { ...edited, emoji: changes.emoji } : edited;
+    return changes.category ? { ...withEmoji, category: changes.category } : withEmoji;
   });
 }
 

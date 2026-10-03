@@ -4,6 +4,7 @@ import {
   archivedHabits,
   archiveHabit,
   createHabit,
+  editHabit,
   type Habit,
   MAX_HABIT_NAME_LENGTH,
   removeHabit,
@@ -30,7 +31,7 @@ describe("validateHabitName", () => {
 
 describe("createHabit", () => {
   it("creates a habit with a unique id and timestamp", () => {
-    const a = createHabit("Read 10 pages", undefined, new Date("2026-01-02T03:04:05Z"));
+    const a = createHabit("Read 10 pages", undefined, undefined, new Date("2026-01-02T03:04:05Z"));
     const b = createHabit("Read 10 pages");
     expect(a.name).toBe("Read 10 pages");
     expect(a.createdAt).toBe("2026-01-02T03:04:05.000Z");
@@ -38,9 +39,34 @@ describe("createHabit", () => {
   });
 });
 
+describe("appearance on habits", () => {
+  it("defaults to the first palette colour and takes a colour and emoji", () => {
+    expect(createHabit("Drink water").color).toBe("emerald");
+    const habit = createHabit("Drink water", undefined, { color: "sky", emoji: "💧" });
+    expect(habit).toMatchObject({ color: "sky", emoji: "💧" });
+  });
+
+  it("edits colour and emoji, and clears the emoji", () => {
+    const habit = createHabit("Drink water", undefined, { color: "sky", emoji: "💧" });
+    const [edited] = editHabit([habit], habit.id, { name: "Drink water", color: "red" });
+    expect(edited).toMatchObject({ color: "red" });
+    expect(edited).not.toHaveProperty("emoji");
+  });
+});
+
 describe("renameHabit and removeHabit", () => {
-  const a = { id: "a", name: "Drink water", createdAt: "2026-01-01T00:00:00.000Z" };
-  const b = { id: "b", name: "Read 10 pages", createdAt: "2026-01-02T00:00:00.000Z" };
+  const a = {
+    id: "a",
+    name: "Drink water",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    color: "emerald" as const,
+  };
+  const b = {
+    id: "b",
+    name: "Read 10 pages",
+    createdAt: "2026-01-02T00:00:00.000Z",
+    color: "emerald" as const,
+  };
 
   it("renames only the matching habit", () => {
     expect(renameHabit([a, b], "b", "Stretch")).toEqual([a, { ...b, name: "Stretch" }]);
@@ -53,8 +79,14 @@ describe("renameHabit and removeHabit", () => {
 
 describe("archiving", () => {
   const habits: Habit[] = [
-    { id: "a", name: "Drink water", createdAt: "2026-01-01T00:00:00.000Z", category: "Health" },
-    { id: "b", name: "Read 10 pages", createdAt: "2026-01-02T00:00:00.000Z" },
+    {
+      id: "a",
+      name: "Drink water",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      color: "emerald",
+      category: "Health",
+    },
+    { id: "b", name: "Read 10 pages", createdAt: "2026-01-02T00:00:00.000Z", color: "emerald" },
   ];
 
   it("archives one habit and splits active from archived", () => {

@@ -1,13 +1,17 @@
 import { type FormEvent, useState } from "react";
+import { DEFAULT_COLOR, type HabitColor, normalizeEmoji } from "../../lib/appearance.ts";
 import { normalizeCategory } from "../../lib/category.ts";
-import { MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
+import { type Appearance, MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
+import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
 
-type Props = { onAdd: (name: string, category?: string) => void };
+type Props = { onAdd: (name: string, category?: string, appearance?: Appearance) => void };
 
 export function AddHabitForm({ onAdd }: Props) {
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
+  const [color, setColor] = useState<HabitColor>(DEFAULT_COLOR);
+  const [emoji, setEmoji] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent) {
@@ -17,9 +21,11 @@ export function AddHabitForm({ onAdd }: Props) {
       setError(result.error);
       return;
     }
-    onAdd(result.name, normalizeCategory(category));
+    onAdd(result.name, normalizeCategory(category), { color, emoji: normalizeEmoji(emoji) });
     setValue("");
     setCategory("");
+    setColor(DEFAULT_COLOR);
+    setEmoji("");
     setError(null);
   }
 
@@ -52,6 +58,13 @@ export function AddHabitForm({ onAdd }: Props) {
           Add
         </button>
       </div>
+      <AppearancePicker
+        idPrefix="new-habit"
+        color={color}
+        emoji={emoji}
+        onColor={setColor}
+        onEmoji={setEmoji}
+      />
       {error ? (
         <p
           id="habit-name-error"

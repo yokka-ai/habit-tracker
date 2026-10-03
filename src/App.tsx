@@ -6,6 +6,7 @@ import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
+import type { HabitColor } from "./lib/appearance.ts";
 import {
   categoriesInUse,
   effectiveFilter,
@@ -14,6 +15,7 @@ import {
   storeCategoryFilter,
 } from "./lib/category.ts";
 import {
+  type Appearance,
   activeHabits,
   archivedHabits,
   archiveHabit,
@@ -30,11 +32,11 @@ export function App() {
   const [storedFilter, setStoredFilter] = useState(() =>
     readStoredCategoryFilter(window.localStorage),
   );
-  const addHabit = (name: string, category?: string) =>
-    setHabits((current) => [...current, createHabit(name, category)]);
+  const addHabit = (name: string, category?: string, appearance?: Appearance) =>
+    setHabits((current) => [...current, createHabit(name, category, appearance)]);
 
-  const edit = (id: string, name: string, category?: string) =>
-    setHabits((c) => editHabit(c, id, { name, category }));
+  const edit = (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) =>
+    setHabits((c) => editHabit(c, id, { name, category, color, emoji }));
   const active = activeHabits(habits);
   const archived = archivedHabits(habits);
   const categories = categoriesInUse(active);

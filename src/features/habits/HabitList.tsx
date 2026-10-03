@@ -1,12 +1,14 @@
 import { type KeyboardEvent, useState } from "react";
+import { type HabitColor, normalizeEmoji, paletteEntry } from "../../lib/appearance.ts";
 import { normalizeCategory } from "../../lib/category.ts";
 import { type Habit, MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
 
+import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
 
 type Props = {
   habits: Habit[];
-  onEdit: (id: string, name: string, category?: string) => void;
+  onEdit: (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
 };
@@ -32,7 +34,7 @@ export function HabitList({ habits, onEdit, onDelete, onArchive }: Props) {
 
 type RowProps = {
   habit: Habit;
-  onEdit: (id: string, name: string, category?: string) => void;
+  onEdit: (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
 };
@@ -41,11 +43,15 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
   const [mode, setMode] = useState<"view" | "edit" | "confirm">("view");
   const [value, setValue] = useState(habit.name);
   const [category, setCategory] = useState(habit.category ?? "");
+  const [color, setColor] = useState<HabitColor>(habit.color);
+  const [emoji, setEmoji] = useState(habit.emoji ?? "");
   const [error, setError] = useState<string | null>(null);
 
   function startEdit() {
     setValue(habit.name);
     setCategory(habit.category ?? "");
+    setColor(habit.color);
+    setEmoji(habit.emoji ?? "");
     setError(null);
     setMode("edit");
   }
@@ -56,7 +62,7 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
       setError(result.error);
       return;
     }
-    onEdit(habit.id, result.name, normalizeCategory(category));
+    onEdit(habit.id, result.name, normalizeCategory(category), color, normalizeEmoji(emoji));
     setMode("view");
   }
 
@@ -102,6 +108,13 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
               Cancel
             </button>
           </div>
+          <AppearancePicker
+            idPrefix={`edit-${habit.id}`}
+            color={color}
+            emoji={emoji}
+            onColor={setColor}
+            onEmoji={setEmoji}
+          />
           {error ? (
             <p
               id={`rename-${habit.id}-error`}
@@ -114,6 +127,11 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
         </div>
       ) : (
         <div className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className={`h-6 w-1.5 shrink-0 rounded-full ${paletteEntry(habit.color).fill}`}
+          />
+          {habit.emoji ? <span aria-hidden="true">{habit.emoji}</span> : null}
           <span className="min-w-0 flex-1 break-words">{habit.name}</span>
           {habit.category ? (
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs dark:bg-stone-800">
