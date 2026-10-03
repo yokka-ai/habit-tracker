@@ -251,3 +251,17 @@ describe("archiving habits", () => {
     expect(screen.queryByRole("button", { name: "Health" })).not.toBeInTheDocument();
   });
 });
+
+describe("persistence", () => {
+  it("keeps habits after the app is reloaded", () => {
+    const first = render(<App />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    first.unmount();
+
+    render(<App />);
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
+  });
+});

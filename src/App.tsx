@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
 import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
 import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
@@ -25,9 +25,13 @@ import {
   removeHabit,
   restoreHabit,
 } from "./lib/habit.ts";
+import { loadHabits, saveHabits } from "./lib/storage.ts";
 
 export function App() {
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
+  useEffect(() => {
+    saveHabits(habits);
+  }, [habits]);
   const theme = useTheme();
   const [storedFilter, setStoredFilter] = useState(() =>
     readStoredCategoryFilter(window.localStorage),
