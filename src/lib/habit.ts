@@ -3,6 +3,7 @@ export type Habit = {
   name: string;
   createdAt: string;
   category?: string;
+  archived?: boolean;
 };
 
 export const MAX_HABIT_NAME_LENGTH = 60;
@@ -45,4 +46,24 @@ export function renameHabit(habits: Habit[], id: string, name: string): Habit[] 
 
 export function removeHabit(habits: Habit[], id: string): Habit[] {
   return habits.filter((habit) => habit.id !== id);
+}
+
+export function archiveHabit(habits: Habit[], id: string): Habit[] {
+  return habits.map((habit) => (habit.id === id ? { ...habit, archived: true } : habit));
+}
+
+export function restoreHabit(habits: Habit[], id: string): Habit[] {
+  return habits.map((habit) => {
+    if (habit.id !== id) return habit;
+    const { archived: _archived, ...rest } = habit;
+    return rest;
+  });
+}
+
+export function activeHabits(habits: Habit[]): Habit[] {
+  return habits.filter((habit) => !habit.archived);
+}
+
+export function archivedHabits(habits: Habit[]): Habit[] {
+  return habits.filter((habit) => habit.archived);
 }

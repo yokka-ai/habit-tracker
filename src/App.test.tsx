@@ -201,3 +201,53 @@ describe("habit categories", () => {
     expect(screen.queryByRole("button", { name: "Health" })).not.toBeInTheDocument();
   });
 });
+
+describe("archiving habits", () => {
+  function addHabit(name: string) {
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: name },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+  }
+
+  it("moves an archived habit to a collapsed section and restores it", () => {
+    render(<App />);
+    addHabit("Drink water");
+    addHabit("Read 10 pages");
+    fireEvent.click(screen.getByRole("button", { name: "Archive Drink water" }));
+    expect(screen.getByRole("list", { name: "Habits" })).not.toHaveTextContent("Drink water");
+    expect(screen.queryByRole("list", { name: "Archived habits" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Archived (1)" }));
+    expect(screen.getByRole("list", { name: "Archived habits" })).toHaveTextContent("Drink water");
+
+    fireEvent.click(screen.getByRole("button", { name: "Restore Drink water" }));
+    expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
+    expect(screen.queryByRole("button", { name: /^Archived/ })).not.toBeInTheDocument();
+  });
+
+  it("deletes an archived habit after confirming", () => {
+    render(<App />);
+    addHabit("Drink water");
+    addHabit("Read 10 pages");
+    fireEvent.click(screen.getByRole("button", { name: "Archive Drink water" }));
+    fireEvent.click(screen.getByRole("button", { name: "Archived (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete Drink water" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm delete Drink water" }));
+    expect(screen.queryByRole("button", { name: /^Archived/ })).not.toBeInTheDocument();
+  });
+
+  it("drops an archived habit's category from the filter chips", () => {
+    render(<App />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Category (optional)" }), {
+      target: { value: "Health" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    addHabit("Read 10 pages");
+    fireEvent.click(screen.getByRole("button", { name: "Archive Drink water" }));
+    expect(screen.queryByRole("button", { name: "Health" })).not.toBeInTheDocument();
+  });
+});

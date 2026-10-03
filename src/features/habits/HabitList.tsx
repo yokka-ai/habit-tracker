@@ -8,16 +8,23 @@ type Props = {
   habits: Habit[];
   onEdit: (id: string, name: string, category?: string) => void;
   onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
 };
 
 const buttonClass =
   "rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-stone-600 dark:hover:bg-stone-800";
 
-export function HabitList({ habits, onEdit, onDelete }: Props) {
+export function HabitList({ habits, onEdit, onDelete, onArchive }: Props) {
   return (
     <ul aria-label="Habits" className="space-y-2">
       {habits.map((habit) => (
-        <HabitRow key={habit.id} habit={habit} onEdit={onEdit} onDelete={onDelete} />
+        <HabitRow
+          key={habit.id}
+          habit={habit}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onArchive={onArchive}
+        />
       ))}
     </ul>
   );
@@ -27,9 +34,10 @@ type RowProps = {
   habit: Habit;
   onEdit: (id: string, name: string, category?: string) => void;
   onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
 };
 
-function HabitRow({ habit, onEdit, onDelete }: RowProps) {
+function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
   const [mode, setMode] = useState<"view" | "edit" | "confirm">("view");
   const [value, setValue] = useState(habit.name);
   const [category, setCategory] = useState(habit.category ?? "");
@@ -136,6 +144,14 @@ function HabitRow({ habit, onEdit, onDelete }: RowProps) {
                 className={buttonClass}
               >
                 Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => onArchive(habit.id)}
+                aria-label={`Archive ${habit.name}`}
+                className={buttonClass}
+              >
+                Archive
               </button>
               <button
                 type="button"

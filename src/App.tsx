@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
+import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
 import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
 import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
@@ -12,7 +13,16 @@ import {
   readStoredCategoryFilter,
   storeCategoryFilter,
 } from "./lib/category.ts";
-import { createHabit, editHabit, type Habit, removeHabit } from "./lib/habit.ts";
+import {
+  activeHabits,
+  archivedHabits,
+  archiveHabit,
+  createHabit,
+  editHabit,
+  type Habit,
+  removeHabit,
+  restoreHabit,
+} from "./lib/habit.ts";
 
 export function App() {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -25,13 +35,17 @@ export function App() {
 
   const edit = (id: string, name: string, category?: string) =>
     setHabits((c) => editHabit(c, id, { name, category }));
-  const categories = categoriesInUse(habits);
-  const filter = effectiveFilter(habits, storedFilter);
+  const active = activeHabits(habits);
+  const archived = archivedHabits(habits);
+  const categories = categoriesInUse(active);
+  const filter = effectiveFilter(active, storedFilter);
   const selectFilter = (category: string) => {
     setStoredFilter(category);
     storeCategoryFilter(window.localStorage, category);
   };
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
+  const archive = (id: string) => setHabits((c) => archiveHabit(c, id));
+  const restore = (id: string) => setHabits((c) => restoreHabit(c, id));
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
@@ -47,16 +61,22 @@ export function App() {
 
       <main className="mx-auto max-w-3xl px-4 py-12">
         <AddHabitForm onAdd={addHabit} />
-        {habits.length === 0 ? (
+        {active.length === 0 ? (
           <EmptyState onPick={addHabit} />
         ) : (
           <>
             {categories.length > 0 ? (
               <CategoryFilter categories={categories} selected={filter} onSelect={selectFilter} />
             ) : null}
-            <HabitList habits={filterHabits(habits, filter)} onEdit={edit} onDelete={remove} />
+            <HabitList
+              habits={filterHabits(active, filter)}
+              onEdit={edit}
+              onDelete={remove}
+              onArchive={archive}
+            />
           </>
         )}
+        <ArchivedSection habits={archived} onRestore={restore} onDelete={remove} />
       </main>
     </div>
   );
