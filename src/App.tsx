@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ExportMenu } from "./features/export/ExportMenu.tsx";
 import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
 import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
 import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
@@ -61,7 +62,10 @@ export function App() {
             ✅
           </span>
           <h1 className="text-xl font-semibold tracking-tight">Habit Tracker</h1>
-          <ThemeToggle preference={theme.preference} onCycle={theme.cycle} />
+          <div className="ml-auto flex items-center gap-2">
+            <ExportMenu habits={habits} />
+            <ThemeToggle preference={theme.preference} onCycle={theme.cycle} />
+          </div>
         </div>
       </header>
 
