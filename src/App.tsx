@@ -5,6 +5,7 @@ import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
 import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
 import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
+import { ImportButton } from "./features/import/ImportButton.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
 import type { HabitColor } from "./lib/appearance.ts";
@@ -63,6 +64,7 @@ export function App() {
           </span>
           <h1 className="text-xl font-semibold tracking-tight">Habit Tracker</h1>
           <div className="ml-auto flex items-center gap-2">
+            <ImportButton habits={habits} onReplace={setHabits} />
             <ExportMenu habits={habits} />
             <ThemeToggle preference={theme.preference} onCycle={theme.cycle} />
           </div>
