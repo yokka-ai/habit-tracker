@@ -84,3 +84,14 @@ export function activeHabits(habits: Habit[]): Habit[] {
 export function archivedHabits(habits: Habit[]): Habit[] {
   return habits.filter((habit) => habit.archived);
 }
+
+/** Moves the habit `id` to the position currently held by `targetId`. */
+export function moveHabit(habits: Habit[], id: string, targetId: string): Habit[] {
+  const from = habits.findIndex((habit) => habit.id === id);
+  const to = habits.findIndex((habit) => habit.id === targetId);
+  if (from === -1 || to === -1 || from === to) return habits;
+  const next = [...habits];
+  const [moved] = next.splice(from, 1);
+  if (moved) next.splice(to, 0, moved);
+  return next;
+}

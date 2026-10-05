@@ -11,23 +11,38 @@ type Props = {
   onEdit: (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  onMove: (id: string, targetId: string) => void;
 };
 
 const buttonClass =
   "rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-stone-600 dark:hover:bg-stone-800";
 
-export function HabitList({ habits, onEdit, onDelete, onArchive }: Props) {
+export function HabitList({ habits, onEdit, onDelete, onArchive, onMove }: Props) {
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   return (
     <ul aria-label="Habits" className="space-y-2">
-      {habits.map((habit) => (
-        <HabitRow
-          key={habit.id}
-          habit={habit}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onArchive={onArchive}
-        />
-      ))}
+      {habits.map((habit, index) => {
+        const prev = habits[index - 1];
+        const next = habits[index + 1];
+        return (
+          <HabitRow
+            key={habit.id}
+            habit={habit}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onArchive={onArchive}
+            onMoveUp={prev ? () => onMove(habit.id, prev.id) : undefined}
+            onMoveDown={next ? () => onMove(habit.id, next.id) : undefined}
+            onDragStart={() => setDraggingId(habit.id)}
+            onDragEnd={() => setDraggingId(null)}
+            onDropOn={() => {
+              if (draggingId) onMove(draggingId, habit.id);
+              setDraggingId(null);
+            }}
+            dragging={draggingId === habit.id}
+          />
+        );
+      })}
     </ul>
   );
 }
@@ -37,9 +52,26 @@ type RowProps = {
   onEdit: (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onDropOn: () => void;
+  dragging: boolean;
 };
 
-function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
+function HabitRow({
+  habit,
+  onEdit,
+  onDelete,
+  onArchive,
+  onMoveUp,
+  onMoveDown,
+  onDragStart,
+  onDragEnd,
+  onDropOn,
+  dragging,
+}: RowProps) {
   const [mode, setMode] = useState<"view" | "edit" | "confirm">("view");
   const [value, setValue] = useState(habit.name);
   const [category, setCategory] = useState(habit.category ?? "");
@@ -76,7 +108,14 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
   }
 
   return (
-    <li className="rounded-lg border border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900">
+    <li
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDropOn();
+      }}
+      className={`rounded-lg border border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 ${dragging ? "opacity-50" : ""}`}
+    >
       {mode === "edit" ? (
         <div>
           <div className="flex gap-2">
@@ -128,6 +167,21 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
       ) : (
         <div className="flex items-center gap-2">
           <span
+            draggable
+            onDragStart={(event) => {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", habit.id);
+              onDragStart();
+            }}
+            onDragEnd={onDragEnd}
+            title="Drag to reorder"
+            data-drag-handle={habit.name}
+            aria-hidden="true"
+            className="cursor-grab select-none px-1 text-stone-400"
+          >
+            ⠿
+          </span>
+          <span
             aria-hidden="true"
             className={`h-6 w-1.5 shrink-0 rounded-full ${paletteEntry(habit.color).fill}`}
           />
@@ -155,6 +209,24 @@ function HabitRow({ habit, onEdit, onDelete, onArchive }: RowProps) {
             </>
           ) : (
             <>
+              <button
+                type="button"
+                onClick={onMoveUp}
+                disabled={!onMoveUp}
+                aria-label={`Move up ${habit.name}`}
+                className={`${buttonClass} disabled:opacity-40`}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                onClick={onMoveDown}
+                disabled={!onMoveDown}
+                aria-label={`Move down ${habit.name}`}
+                className={`${buttonClass} disabled:opacity-40`}
+              >
+                ↓
+              </button>
               <button
                 type="button"
                 onClick={startEdit}

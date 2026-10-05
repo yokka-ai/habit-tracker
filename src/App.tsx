@@ -24,6 +24,7 @@ import {
   createHabit,
   editHabit,
   type Habit,
+  moveHabit,
   removeHabit,
   restoreHabit,
 } from "./lib/habit.ts";
@@ -52,6 +53,7 @@ export function App() {
     storeCategoryFilter(window.localStorage, category);
   };
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
+  const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
   const archive = (id: string) => setHabits((c) => archiveHabit(c, id));
   const restore = (id: string) => setHabits((c) => restoreHabit(c, id));
 
@@ -85,6 +87,7 @@ export function App() {
               onEdit={edit}
               onDelete={remove}
               onArchive={archive}
+              onMove={move}
             />
           </>
         )}

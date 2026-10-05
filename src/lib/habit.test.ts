@@ -7,6 +7,7 @@ import {
   editHabit,
   type Habit,
   MAX_HABIT_NAME_LENGTH,
+  moveHabit,
   removeHabit,
   renameHabit,
   restoreHabit,
@@ -98,5 +99,29 @@ describe("archiving", () => {
   it("restores a habit with its other fields intact", () => {
     const restored = restoreHabit(archiveHabit(habits, "a"), "a");
     expect(restored).toEqual(habits);
+  });
+});
+
+describe("moveHabit", () => {
+  const list = ["a", "b", "c", "d"].map((id) => ({ ...createHabit(id), id }));
+  const ids = (habits: Habit[]) => habits.map((h) => h.id).join("");
+
+  it("moves a habit down onto a later one", () => {
+    expect(ids(moveHabit(list, "a", "c"))).toBe("bcad");
+  });
+
+  it("moves a habit up onto an earlier one", () => {
+    expect(ids(moveHabit(list, "d", "b"))).toBe("adbc");
+  });
+
+  it("leaves the list alone for unknown ids or the same habit", () => {
+    expect(moveHabit(list, "a", "a")).toBe(list);
+    expect(moveHabit(list, "x", "a")).toBe(list);
+    expect(moveHabit(list, "a", "x")).toBe(list);
+  });
+
+  it("does not mutate the input", () => {
+    moveHabit(list, "a", "d");
+    expect(ids(list)).toBe("abcd");
   });
 });
