@@ -6,11 +6,13 @@ import {
   createHabit,
   editHabit,
   type Habit,
+  isCheckedIn,
   MAX_HABIT_NAME_LENGTH,
   moveHabit,
   removeHabit,
   renameHabit,
   restoreHabit,
+  toggleCheckIn,
   validateHabitName,
 } from "./habit.ts";
 
@@ -123,5 +125,30 @@ describe("moveHabit", () => {
   it("does not mutate the input", () => {
     moveHabit(list, "a", "d");
     expect(ids(list)).toBe("abcd");
+  });
+});
+
+describe("toggleCheckIn", () => {
+  const habit = createHabit("Drink water");
+  const other = createHabit("Stretch");
+
+  it("marks a day done and un-marks it again", () => {
+    const marked = toggleCheckIn([habit, other], habit.id, "2026-10-05");
+    expect(isCheckedIn(marked[0] as Habit, "2026-10-05")).toBe(true);
+    expect(marked[1]).toBe(other);
+    const unmarked = toggleCheckIn(marked, habit.id, "2026-10-05");
+    expect(isCheckedIn(unmarked[0] as Habit, "2026-10-05")).toBe(false);
+  });
+
+  it("keeps check-ins sorted and unique", () => {
+    let habits = [habit];
+    for (const day of ["2026-10-05", "2026-10-03", "2026-10-04", "2026-10-03", "2026-10-03"]) {
+      habits = toggleCheckIn(habits, habit.id, day);
+    }
+    expect(habits[0]?.checkIns).toEqual(["2026-10-03", "2026-10-04", "2026-10-05"]);
+  });
+
+  it("ignores unknown ids", () => {
+    expect(toggleCheckIn([habit], "nope", "2026-10-05")).toEqual([habit]);
   });
 });

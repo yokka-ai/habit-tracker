@@ -1,7 +1,12 @@
 import { type KeyboardEvent, useState } from "react";
 import { type HabitColor, normalizeEmoji, paletteEntry } from "../../lib/appearance.ts";
 import { normalizeCategory } from "../../lib/category.ts";
-import { type Habit, MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
+import {
+  type Habit,
+  isCheckedIn,
+  MAX_HABIT_NAME_LENGTH,
+  validateHabitName,
+} from "../../lib/habit.ts";
 
 import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
@@ -12,12 +17,14 @@ type Props = {
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
   onMove: (id: string, targetId: string) => void;
+  onToggle: (id: string) => void;
+  today: string;
 };
 
 const buttonClass =
   "rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-stone-600 dark:hover:bg-stone-800";
 
-export function HabitList({ habits, onEdit, onDelete, onArchive, onMove }: Props) {
+export function HabitList({ habits, onEdit, onDelete, onArchive, onMove, onToggle, today }: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   return (
     <ul aria-label="Habits" className="space-y-2">
@@ -31,6 +38,8 @@ export function HabitList({ habits, onEdit, onDelete, onArchive, onMove }: Props
             onEdit={onEdit}
             onDelete={onDelete}
             onArchive={onArchive}
+            onToggle={onToggle}
+            today={today}
             onMoveUp={prev ? () => onMove(habit.id, prev.id) : undefined}
             onMoveDown={next ? () => onMove(habit.id, next.id) : undefined}
             onDragStart={() => setDraggingId(habit.id)}
@@ -52,6 +61,8 @@ type RowProps = {
   onEdit: (id: string, name: string, category?: string, color?: HabitColor, emoji?: string) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  onToggle: (id: string) => void;
+  today: string;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   onDragStart: () => void;
@@ -65,6 +76,8 @@ function HabitRow({
   onEdit,
   onDelete,
   onArchive,
+  onToggle,
+  today,
   onMoveUp,
   onMoveDown,
   onDragStart,
@@ -78,6 +91,7 @@ function HabitRow({
   const [color, setColor] = useState<HabitColor>(habit.color);
   const [emoji, setEmoji] = useState(habit.emoji ?? "");
   const [error, setError] = useState<string | null>(null);
+  const done = isCheckedIn(habit, today);
 
   function startEdit() {
     setValue(habit.name);
@@ -185,6 +199,15 @@ function HabitRow({
             aria-hidden="true"
             className={`h-6 w-1.5 shrink-0 rounded-full ${paletteEntry(habit.color).fill}`}
           />
+          <button
+            type="button"
+            onClick={() => onToggle(habit.id)}
+            aria-pressed={done}
+            aria-label={`Done today: ${habit.name}`}
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${done ? "border-emerald-600 bg-emerald-600 text-white" : "border-stone-300 bg-white dark:border-stone-600 dark:bg-stone-900"}`}
+          >
+            <span aria-hidden="true">{done ? "✓" : ""}</span>
+          </button>
           {habit.emoji ? <span aria-hidden="true">{habit.emoji}</span> : null}
           <span className="min-w-0 flex-1 break-words">{habit.name}</span>
           {habit.category ? (

@@ -16,6 +16,7 @@ import {
   readStoredCategoryFilter,
   storeCategoryFilter,
 } from "./lib/category.ts";
+import { today } from "./lib/dates.ts";
 import {
   type Appearance,
   activeHabits,
@@ -27,6 +28,7 @@ import {
   moveHabit,
   removeHabit,
   restoreHabit,
+  toggleCheckIn,
 } from "./lib/habit.ts";
 import { loadHabits, saveHabits } from "./lib/storage.ts";
 
@@ -54,6 +56,7 @@ export function App() {
   };
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
   const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
+  const toggle = (id: string) => setHabits((c) => toggleCheckIn(c, id, today()));
   const archive = (id: string) => setHabits((c) => archiveHabit(c, id));
   const restore = (id: string) => setHabits((c) => restoreHabit(c, id));
 
@@ -88,6 +91,8 @@ export function App() {
               onDelete={remove}
               onArchive={archive}
               onMove={move}
+              onToggle={toggle}
+              today={today()}
             />
           </>
         )}

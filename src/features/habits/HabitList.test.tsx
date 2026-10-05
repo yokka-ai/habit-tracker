@@ -17,6 +17,8 @@ function setup() {
       onDelete={vi.fn()}
       onArchive={vi.fn()}
       onMove={onMove}
+      onToggle={vi.fn()}
+      today="2026-10-05"
     />,
   );
   return onMove;
@@ -46,5 +48,31 @@ describe("HabitList reordering", () => {
     fireEvent.dragOver(target, { dataTransfer });
     fireEvent.drop(target, { dataTransfer });
     expect(onMove).toHaveBeenCalledWith(stretch.id, water.id);
+  });
+});
+
+describe("HabitList check-off", () => {
+  it("shows a pressed toggle for habits done today and reports clicks", () => {
+    const onToggle = vi.fn();
+    const done = { ...water, checkIns: ["2026-10-05"] };
+    render(
+      <HabitList
+        habits={[done, read]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onArchive={vi.fn()}
+        onMove={vi.fn()}
+        onToggle={onToggle}
+        today="2026-10-05"
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Done today: Drink water" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const open = screen.getByRole("button", { name: "Done today: Read 10 pages" });
+    expect(open).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(open);
+    expect(onToggle).toHaveBeenCalledWith(read.id);
   });
 });

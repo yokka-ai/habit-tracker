@@ -1,26 +1,17 @@
 import { DEFAULT_COLOR } from "./appearance.ts";
+import { isValidDay } from "./dates.ts";
+
+export { isValidDay };
+
 import { createHabit, type Habit, MAX_HABIT_NAME_LENGTH } from "./habit.ts";
 import { STORAGE_VERSION } from "./storage.ts";
 
-type CheckInHabit = Habit & { checkIns?: string[] };
+type CheckInHabit = Habit;
 
 export type ImportSummary = { habits: number; checkIns: number };
 export type ImportResult =
   | { ok: true; habits: Habit[]; summary: ImportSummary }
   | { ok: false; error: string };
-
-const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-
-/** True for a real calendar date in `YYYY-MM-DD` form (leap years included). */
-export function isValidDay(value: string): boolean {
-  const match = DATE.exec(value);
-  if (!match) return false;
-  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return (
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-  );
-}
 
 function countCheckIns(habits: Habit[]): number {
   return habits.reduce((n, h) => n + ((h as CheckInHabit).checkIns?.length ?? 0), 0);

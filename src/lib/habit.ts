@@ -8,6 +8,8 @@ export type Habit = {
   archived?: boolean;
   color: HabitColor;
   emoji?: string;
+  /** Local days (`YYYY-MM-DD`) this habit was done, sorted and without duplicates. */
+  checkIns?: string[];
 };
 
 export type Appearance = { color: HabitColor; emoji?: string };
@@ -94,4 +96,18 @@ export function moveHabit(habits: Habit[], id: string, targetId: string): Habit[
   const [moved] = next.splice(from, 1);
   if (moved) next.splice(to, 0, moved);
   return next;
+}
+
+export function isCheckedIn(habit: Habit, day: string): boolean {
+  return habit.checkIns?.includes(day) ?? false;
+}
+
+/** Marks `day` done for habit `id`, or un-marks it if it already was. */
+export function toggleCheckIn(habits: Habit[], id: string, day: string): Habit[] {
+  return habits.map((habit) => {
+    if (habit.id !== id) return habit;
+    const days = habit.checkIns ?? [];
+    const next = days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort();
+    return { ...habit, checkIns: next };
+  });
 }

@@ -265,3 +265,24 @@ describe("persistence", () => {
     expect(screen.getByRole("list", { name: "Habits" })).toHaveTextContent("Drink water");
   });
 });
+
+describe("daily check-off", () => {
+  it("marks a habit done, un-marks it, and survives a reload", () => {
+    window.localStorage.clear();
+    const { unmount } = render(<App />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    const toggle = () => screen.getByRole("button", { name: "Done today: Drink water" });
+    expect(toggle()).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(toggle());
+    expect(toggle()).toHaveAttribute("aria-pressed", "true");
+
+    unmount();
+    render(<App />);
+    expect(toggle()).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(toggle());
+    expect(toggle()).toHaveAttribute("aria-pressed", "false");
+  });
+});
