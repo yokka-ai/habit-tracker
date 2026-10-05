@@ -5,6 +5,7 @@ import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
 import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
 import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
+import { useReminders } from "./features/habits/useReminders.ts";
 import { ImportButton } from "./features/import/ImportButton.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
@@ -28,8 +29,14 @@ import {
   moveHabit,
   removeHabit,
   restoreHabit,
+  setReminder,
   toggleCheckIn,
 } from "./lib/habit.ts";
+import {
+  DENIED_HELP,
+  ensureNotificationPermission,
+  UNSUPPORTED_HELP,
+} from "./lib/notifications.ts";
 import { loadHabits, saveHabits } from "./lib/storage.ts";
 
 export function App() {
@@ -37,6 +44,8 @@ export function App() {
   useEffect(() => {
     saveHabits(habits);
   }, [habits]);
+  useReminders(habits);
+  const [reminderNotice, setReminderNotice] = useState<string | null>(null);
   const theme = useTheme();
   const [storedFilter, setStoredFilter] = useState(() =>
     readStoredCategoryFilter(window.localStorage),
@@ -57,6 +66,14 @@ export function App() {
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
   const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
   const toggle = (id: string) => setHabits((c) => toggleCheckIn(c, id, today()));
+  const changeReminder = async (id: string, time: string | undefined) => {
+    setHabits((c) => setReminder(c, id, time));
+    setReminderNotice(null);
+    if (!time) return;
+    const permission = await ensureNotificationPermission();
+    if (permission === "denied") setReminderNotice(DENIED_HELP);
+    else if (permission === "unsupported") setReminderNotice(UNSUPPORTED_HELP);
+  };
   const archive = (id: string) => setHabits((c) => archiveHabit(c, id));
   const restore = (id: string) => setHabits((c) => restoreHabit(c, id));
 
@@ -78,6 +95,11 @@ export function App() {
 
       <main className="mx-auto max-w-3xl px-4 py-12">
         <AddHabitForm onAdd={addHabit} />
+        {reminderNotice ? (
+          <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
+            {reminderNotice}
+          </p>
+        ) : null}
         {active.length === 0 ? (
           <EmptyState onPick={addHabit} />
         ) : (
@@ -92,6 +114,7 @@ export function App() {
               onArchive={archive}
               onMove={move}
               onToggle={toggle}
+              onSetReminder={changeReminder}
               today={today()}
             />
           </>

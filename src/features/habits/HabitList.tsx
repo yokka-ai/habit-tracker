@@ -18,13 +18,23 @@ type Props = {
   onArchive: (id: string) => void;
   onMove: (id: string, targetId: string) => void;
   onToggle: (id: string) => void;
+  onSetReminder: (id: string, time: string | undefined) => void;
   today: string;
 };
 
 const buttonClass =
   "rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-stone-600 dark:hover:bg-stone-800";
 
-export function HabitList({ habits, onEdit, onDelete, onArchive, onMove, onToggle, today }: Props) {
+export function HabitList({
+  habits,
+  onEdit,
+  onDelete,
+  onArchive,
+  onMove,
+  onToggle,
+  onSetReminder,
+  today,
+}: Props) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   return (
     <ul aria-label="Habits" className="space-y-2">
@@ -39,6 +49,7 @@ export function HabitList({ habits, onEdit, onDelete, onArchive, onMove, onToggl
             onDelete={onDelete}
             onArchive={onArchive}
             onToggle={onToggle}
+            onSetReminder={onSetReminder}
             today={today}
             onMoveUp={prev ? () => onMove(habit.id, prev.id) : undefined}
             onMoveDown={next ? () => onMove(habit.id, next.id) : undefined}
@@ -62,6 +73,7 @@ type RowProps = {
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
   onToggle: (id: string) => void;
+  onSetReminder: (id: string, time: string | undefined) => void;
   today: string;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -77,6 +89,7 @@ function HabitRow({
   onDelete,
   onArchive,
   onToggle,
+  onSetReminder,
   today,
   onMoveUp,
   onMoveDown,
@@ -90,6 +103,7 @@ function HabitRow({
   const [category, setCategory] = useState(habit.category ?? "");
   const [color, setColor] = useState<HabitColor>(habit.color);
   const [emoji, setEmoji] = useState(habit.emoji ?? "");
+  const [reminder, setReminder] = useState(habit.reminder ?? "");
   const [error, setError] = useState<string | null>(null);
   const done = isCheckedIn(habit, today);
 
@@ -98,6 +112,7 @@ function HabitRow({
     setCategory(habit.category ?? "");
     setColor(habit.color);
     setEmoji(habit.emoji ?? "");
+    setReminder(habit.reminder ?? "");
     setError(null);
     setMode("edit");
   }
@@ -109,6 +124,7 @@ function HabitRow({
       return;
     }
     onEdit(habit.id, result.name, normalizeCategory(category), color, normalizeEmoji(emoji));
+    if (reminder !== (habit.reminder ?? "")) onSetReminder(habit.id, reminder || undefined);
     setMode("view");
   }
 
@@ -168,6 +184,22 @@ function HabitRow({
             onColor={setColor}
             onEmoji={setEmoji}
           />
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <label htmlFor={`reminder-${habit.id}`}>Reminder time</label>
+            <input
+              id={`reminder-${habit.id}`}
+              type="time"
+              value={reminder}
+              onChange={(event) => setReminder(event.target.value)}
+              onKeyDown={handleKeyDown}
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100"
+            />
+            {reminder ? (
+              <button type="button" onClick={() => setReminder("")} className={buttonClass}>
+                Clear reminder
+              </button>
+            ) : null}
+          </div>
           {error ? (
             <p
               id={`rename-${habit.id}-error`}
@@ -210,6 +242,13 @@ function HabitRow({
           </button>
           {habit.emoji ? <span aria-hidden="true">{habit.emoji}</span> : null}
           <span className="min-w-0 flex-1 break-words">{habit.name}</span>
+          {habit.reminder ? (
+            <span className="text-xs text-stone-500 dark:text-stone-400">
+              <span aria-hidden="true">🔔 </span>
+              <span className="sr-only">Reminder at </span>
+              {habit.reminder}
+            </span>
+          ) : null}
           {habit.category ? (
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs dark:bg-stone-800">
               {habit.category}

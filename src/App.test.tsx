@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App.tsx";
 
 describe("App", () => {
@@ -284,5 +284,49 @@ describe("daily check-off", () => {
     expect(toggle()).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(toggle());
     expect(toggle()).toHaveAttribute("aria-pressed", "false");
+  });
+});
+
+describe("reminders", () => {
+  const original = globalThis.Notification;
+  afterEach(() => {
+    vi.stubGlobal("Notification", original);
+  });
+
+  function setReminderTo(time: string) {
+    render(<App />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Drink water" }));
+    fireEvent.change(screen.getByLabelText("Reminder time"), { target: { value: time } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  }
+
+  it("asks for permission only when a reminder is set", async () => {
+    const requestPermission = vi.fn().mockResolvedValue("granted");
+    vi.stubGlobal(
+      "Notification",
+      Object.assign(vi.fn(), { permission: "default", requestPermission }),
+    );
+    render(<App />);
+    expect(requestPermission).not.toHaveBeenCalled();
+    cleanup();
+    setReminderTo("09:00");
+    await waitFor(() => expect(requestPermission).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("09:00")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("explains how to enable notifications when denied", async () => {
+    const requestPermission = vi.fn();
+    vi.stubGlobal(
+      "Notification",
+      Object.assign(vi.fn(), { permission: "denied", requestPermission }),
+    );
+    setReminderTo("09:00");
+    expect(await screen.findByRole("alert")).toHaveTextContent("site settings");
+    expect(requestPermission).not.toHaveBeenCalled();
   });
 });

@@ -8,6 +8,8 @@ export type Habit = {
   archived?: boolean;
   color: HabitColor;
   emoji?: string;
+  /** Daily reminder time as local `HH:MM`. */
+  reminder?: string;
   /** Local days (`YYYY-MM-DD`) this habit was done, sorted and without duplicates. */
   checkIns?: string[];
 };
@@ -109,5 +111,14 @@ export function toggleCheckIn(habits: Habit[], id: string, day: string): Habit[]
     const days = habit.checkIns ?? [];
     const next = days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort();
     return { ...habit, checkIns: next };
+  });
+}
+
+/** Sets or (with `undefined`) clears the daily reminder time of habit `id`. */
+export function setReminder(habits: Habit[], id: string, time: string | undefined): Habit[] {
+  return habits.map((habit) => {
+    if (habit.id !== id) return habit;
+    const { reminder: _reminder, ...rest } = habit;
+    return time ? { ...rest, reminder: time } : rest;
   });
 }

@@ -18,6 +18,7 @@ function setup() {
       onArchive={vi.fn()}
       onMove={onMove}
       onToggle={vi.fn()}
+      onSetReminder={vi.fn()}
       today="2026-10-05"
     />,
   );
@@ -62,6 +63,7 @@ describe("HabitList check-off", () => {
         onDelete={vi.fn()}
         onArchive={vi.fn()}
         onMove={vi.fn()}
+        onSetReminder={vi.fn()}
         onToggle={onToggle}
         today="2026-10-05"
       />,
