@@ -28,6 +28,7 @@ import {
   createHabit,
   editHabit,
   type Habit,
+  isCheckedIn,
   moveHabit,
   removeHabit,
   restoreHabit,
@@ -67,7 +68,15 @@ export function App() {
   };
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
   const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
-  const toggle = (id: string) => setHabits((c) => toggleCheckIn(c, id, today()));
+  const [announcement, setAnnouncement] = useState("");
+  const toggle = (id: string) => {
+    const habit = habits.find((h) => h.id === id);
+    if (habit) {
+      const verb = isCheckedIn(habit, today()) ? "unchecked" : "checked off";
+      setAnnouncement(`${habit.name} ${verb} for today`);
+    }
+    setHabits((c) => toggleCheckIn(c, id, today()));
+  };
   const visible = filterHabits(active, filter);
   const [helpOpen, setHelpOpen] = useState(false);
   const addFormRef = useRef<HTMLDivElement>(null);
@@ -138,6 +147,9 @@ export function App() {
         )}
         <ArchivedSection habits={archived} onRestore={restore} onDelete={remove} />
       </main>
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
       <ShortcutsDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
