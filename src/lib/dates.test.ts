@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidDay, toDay, today } from "./dates.ts";
+import { addDays, isValidDay, toDay, today, weekday } from "./dates.ts";
 
 describe("toDay", () => {
   it("uses the local calendar date, zero-padded", () => {
@@ -19,5 +19,25 @@ describe("today", () => {
 
   it("defaults to the current day", () => {
     expect(isValidDay(today())).toBe(true);
+  });
+});
+
+describe("addDays", () => {
+  it("crosses month and year ends", () => {
+    expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+    expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+  });
+
+  it("handles leap days", () => {
+    expect(addDays("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addDays("2028-02-29", 1)).toBe("2028-03-01");
+    expect(addDays("2028-03-01", -366)).toBe("2027-03-01");
+  });
+});
+
+describe("weekday", () => {
+  it("returns 0 for Sunday", () => {
+    expect(weekday("2026-10-04")).toBe(0);
+    expect(weekday("2026-10-06")).toBe(2);
   });
 });

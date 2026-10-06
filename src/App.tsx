@@ -6,6 +6,7 @@ import { CategoryFilter } from "./features/habits/CategoryFilter.tsx";
 import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { useReminders } from "./features/habits/useReminders.ts";
+import { YearHeatmap } from "./features/heatmap/YearHeatmap.tsx";
 import { ImportButton } from "./features/import/ImportButton.tsx";
 import { ShortcutsDialog } from "./features/shortcuts/ShortcutsDialog.tsx";
 import { useKeyboardShortcuts } from "./features/shortcuts/useKeyboardShortcuts.ts";
@@ -143,6 +144,14 @@ export function App() {
               onSetReminder={changeReminder}
               today={today()}
             />
+            <section aria-labelledby="year-heading" className="mt-10 space-y-4">
+              <h2 id="year-heading" className="text-lg font-semibold">
+                Past year
+              </h2>
+              {visible.map((habit) => (
+                <YearHeatmap key={habit.id} habit={habit} today={today()} />
+              ))}
+            </section>
           </>
         )}
         <ArchivedSection habits={archived} onRestore={restore} onDelete={remove} />

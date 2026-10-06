@@ -23,3 +23,27 @@ export function toDay(date: Date): string {
 export function today(now: Date = new Date()): string {
   return toDay(now);
 }
+
+function toUtc(day: string): Date {
+  const [year, month, date] = day.split("-").map(Number) as [number, number, number];
+  return new Date(Date.UTC(year, month - 1, date));
+}
+
+function fromUtc(date: Date): string {
+  const year = String(date.getUTCFullYear()).padStart(4, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** The calendar day `count` days after `day` (negative for before). Not affected by DST. */
+export function addDays(day: string, count: number): string {
+  const date = toUtc(day);
+  date.setUTCDate(date.getUTCDate() + count);
+  return fromUtc(date);
+}
+
+/** Weekday of `day`, 0 (Sunday) to 6 (Saturday). */
+export function weekday(day: string): number {
+  return toUtc(day).getUTCDay();
+}
