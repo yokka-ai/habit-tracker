@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExportMenu } from "./features/export/ExportMenu.tsx";
 import { AddHabitForm } from "./features/habits/AddHabitForm.tsx";
 import { ArchivedSection } from "./features/habits/ArchivedSection.tsx";
@@ -7,6 +7,8 @@ import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { useReminders } from "./features/habits/useReminders.ts";
 import { ImportButton } from "./features/import/ImportButton.tsx";
+import { ShortcutsDialog } from "./features/shortcuts/ShortcutsDialog.tsx";
+import { useKeyboardShortcuts } from "./features/shortcuts/useKeyboardShortcuts.ts";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
 import type { HabitColor } from "./lib/appearance.ts";
@@ -66,6 +68,19 @@ export function App() {
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
   const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
   const toggle = (id: string) => setHabits((c) => toggleCheckIn(c, id, today()));
+  const visible = filterHabits(active, filter);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const addFormRef = useRef<HTMLDivElement>(null);
+  useKeyboardShortcuts((action) => {
+    if (action.type === "focus-new-habit") {
+      addFormRef.current?.querySelector<HTMLInputElement>("#habit-name")?.focus();
+    } else if (action.type === "toggle-habit") {
+      const habit = visible[action.position - 1];
+      if (habit) toggle(habit.id);
+    } else if (action.type === "show-help") {
+      setHelpOpen(true);
+    }
+  });
   const changeReminder = async (id: string, time: string | undefined) => {
     setHabits((c) => setReminder(c, id, time));
     setReminderNotice(null);
@@ -94,7 +109,9 @@ export function App() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-12">
-        <AddHabitForm onAdd={addHabit} />
+        <div ref={addFormRef}>
+          <AddHabitForm onAdd={addHabit} />
+        </div>
         {reminderNotice ? (
           <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-400">
             {reminderNotice}
@@ -108,7 +125,7 @@ export function App() {
               <CategoryFilter categories={categories} selected={filter} onSelect={selectFilter} />
             ) : null}
             <HabitList
-              habits={filterHabits(active, filter)}
+              habits={visible}
               onEdit={edit}
               onDelete={remove}
               onArchive={archive}
@@ -121,6 +138,7 @@ export function App() {
         )}
         <ArchivedSection habits={archived} onRestore={restore} onDelete={remove} />
       </main>
+      <ShortcutsDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

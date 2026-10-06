@@ -330,3 +330,44 @@ describe("reminders", () => {
     expect(requestPermission).not.toHaveBeenCalled();
   });
 });
+
+describe("keyboard shortcuts", () => {
+  it("n focuses the new-habit field", () => {
+    render(<App />);
+    fireEvent.keyDown(window, { key: "n" });
+    expect(screen.getByRole("textbox", { name: "Habit name" })).toHaveFocus();
+  });
+
+  it("number keys toggle today for the habit in that position", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Walk 20 minutes" }));
+    const done = () => screen.getAllByRole("button", { name: /^Done today/, pressed: true });
+    expect(screen.queryAllByRole("button", { name: /^Done today/, pressed: true })).toHaveLength(0);
+    fireEvent.keyDown(window, { key: "1" });
+    expect(done()).toHaveLength(1);
+    fireEvent.keyDown(window, { key: "1" });
+    expect(screen.queryAllByRole("button", { name: /^Done today/, pressed: true })).toHaveLength(0);
+    fireEvent.keyDown(window, { key: "5" });
+    expect(screen.queryAllByRole("button", { name: /^Done today/, pressed: true })).toHaveLength(0);
+  });
+
+  it("typing in the field does not trigger shortcuts", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Walk 20 minutes" }));
+    const input = screen.getByRole("textbox", { name: "Habit name" });
+    input.focus();
+    fireEvent.keyDown(input, { key: "1" });
+    fireEvent.keyDown(input, { key: "?" });
+    expect(screen.queryAllByRole("button", { name: /^Done today/, pressed: true })).toHaveLength(0);
+    expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).not.toBeInTheDocument();
+  });
+
+  it("? opens the shortcuts dialog and Close dismisses it", () => {
+    render(<App />);
+    fireEvent.keyDown(window, { key: "?" });
+    const dialog = screen.getByRole("dialog", { name: "Keyboard shortcuts" });
+    expect(dialog).toHaveTextContent("Focus the new habit field");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).not.toBeInTheDocument();
+  });
+});
