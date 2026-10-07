@@ -12,6 +12,7 @@ import { ShortcutsDialog } from "./features/shortcuts/ShortcutsDialog.tsx";
 import { useKeyboardShortcuts } from "./features/shortcuts/useKeyboardShortcuts.ts";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
+import { WeekView } from "./features/week/WeekView.tsx";
 import type { HabitColor } from "./lib/appearance.ts";
 import {
   categoriesInUse,
@@ -36,6 +37,7 @@ import {
   setReminder,
   toggleCheckIn,
 } from "./lib/habit.ts";
+import { dayLabel } from "./lib/heatmap.ts";
 import {
   DENIED_HELP,
   ensureNotificationPermission,
@@ -70,14 +72,16 @@ export function App() {
   const remove = (id: string) => setHabits((c) => removeHabit(c, id));
   const move = (id: string, targetId: string) => setHabits((c) => moveHabit(c, id, targetId));
   const [announcement, setAnnouncement] = useState("");
-  const toggle = (id: string) => {
+  const toggleDay = (id: string, day: string) => {
     const habit = habits.find((h) => h.id === id);
     if (habit) {
-      const verb = isCheckedIn(habit, today()) ? "unchecked" : "checked off";
-      setAnnouncement(`${habit.name} ${verb} for today`);
+      const verb = isCheckedIn(habit, day) ? "unchecked" : "checked off";
+      setAnnouncement(`${habit.name} ${verb} for ${day === today() ? "today" : dayLabel(day)}`);
     }
-    setHabits((c) => toggleCheckIn(c, id, today()));
+    setHabits((c) => toggleCheckIn(c, id, day));
   };
+  const toggle = (id: string) => toggleDay(id, today());
+  const [view, setView] = useState<"today" | "week">("today");
   const visible = filterHabits(active, filter);
   const [helpOpen, setHelpOpen] = useState(false);
   const addFormRef = useRef<HTMLDivElement>(null);
@@ -134,16 +138,34 @@ export function App() {
             {categories.length > 0 ? (
               <CategoryFilter categories={categories} selected={filter} onSelect={selectFilter} />
             ) : null}
-            <HabitList
-              habits={visible}
-              onEdit={edit}
-              onDelete={remove}
-              onArchive={archive}
-              onMove={move}
-              onToggle={toggle}
-              onSetReminder={changeReminder}
-              today={today()}
-            />
+            <fieldset className="mb-4 flex gap-2">
+              <legend className="sr-only">View</legend>
+              {(["today", "week"] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={view === v}
+                  onClick={() => setView(v)}
+                  className="rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 aria-pressed:bg-emerald-600 aria-pressed:text-white dark:border-stone-600 dark:hover:bg-stone-800"
+                >
+                  {v === "today" ? "Today" : "Week"}
+                </button>
+              ))}
+            </fieldset>
+            {view === "week" ? (
+              <WeekView habits={visible} today={today()} onToggleDay={toggleDay} />
+            ) : (
+              <HabitList
+                habits={visible}
+                onEdit={edit}
+                onDelete={remove}
+                onArchive={archive}
+                onMove={move}
+                onToggle={toggle}
+                onSetReminder={changeReminder}
+                today={today()}
+              />
+            )}
             <section aria-labelledby="year-heading" className="mt-10 space-y-4">
               <h2 id="year-heading" className="text-lg font-semibold">
                 Past year

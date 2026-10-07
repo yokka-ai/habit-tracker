@@ -371,3 +371,19 @@ describe("keyboard shortcuts", () => {
     expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).not.toBeInTheDocument();
   });
 });
+
+describe("week view", () => {
+  it("switches between Today and Week from the header area", () => {
+    render(<App />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Habit name" }), {
+      target: { value: "Read 10 pages" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(screen.getByRole("button", { name: "Today" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Week" }));
+    expect(screen.getByRole("region", { name: "Week" })).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Habits" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Today" }));
+    expect(screen.getByRole("list", { name: "Habits" })).toBeInTheDocument();
+  });
+});
