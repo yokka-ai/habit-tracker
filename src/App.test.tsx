@@ -387,3 +387,13 @@ describe("week view", () => {
     expect(screen.getByRole("list", { name: "Habits" })).toBeInTheDocument();
   });
 });
+
+describe("stats page", () => {
+  it("opens from the header and closes again", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Stats" }));
+    expect(screen.getByText(/No stats yet/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stats" }));
+    expect(screen.queryByText(/No stats yet/)).not.toBeInTheDocument();
+  });
+});

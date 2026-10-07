@@ -10,6 +10,7 @@ import { YearHeatmap } from "./features/heatmap/YearHeatmap.tsx";
 import { ImportButton } from "./features/import/ImportButton.tsx";
 import { ShortcutsDialog } from "./features/shortcuts/ShortcutsDialog.tsx";
 import { useKeyboardShortcuts } from "./features/shortcuts/useKeyboardShortcuts.ts";
+import { StatsPage } from "./features/stats/StatsPage.tsx";
 import { ThemeToggle } from "./features/theme/ThemeToggle.tsx";
 import { useTheme } from "./features/theme/useTheme.ts";
 import { WeekView } from "./features/week/WeekView.tsx";
@@ -82,6 +83,7 @@ export function App() {
   };
   const toggle = (id: string) => toggleDay(id, today());
   const [view, setView] = useState<"today" | "week">("today");
+  const [showStats, setShowStats] = useState(false);
   const visible = filterHabits(active, filter);
   const [helpOpen, setHelpOpen] = useState(false);
   const addFormRef = useRef<HTMLDivElement>(null);
@@ -115,6 +117,14 @@ export function App() {
           </span>
           <h1 className="text-xl font-semibold tracking-tight">Habit Tracker</h1>
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={showStats}
+              onClick={() => setShowStats((s) => !s)}
+              className="rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 aria-pressed:bg-emerald-600 aria-pressed:text-white dark:border-stone-600 dark:hover:bg-stone-800"
+            >
+              Stats
+            </button>
             <ImportButton habits={habits} onReplace={setHabits} />
             <ExportMenu habits={habits} />
             <ThemeToggle preference={theme.preference} onCycle={theme.cycle} />
@@ -131,7 +141,9 @@ export function App() {
             {reminderNotice}
           </p>
         ) : null}
-        {active.length === 0 ? (
+        {showStats ? (
+          <StatsPage habits={active} today={today()} />
+        ) : active.length === 0 ? (
           <EmptyState onPick={addHabit} />
         ) : (
           <>
