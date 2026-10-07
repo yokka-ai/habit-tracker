@@ -7,6 +7,7 @@ import {
   MAX_HABIT_NAME_LENGTH,
   validateHabitName,
 } from "../../lib/habit.ts";
+import { bestStreak, currentStreak } from "../../lib/streak.ts";
 
 import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
@@ -106,6 +107,8 @@ function HabitRow({
   const [reminder, setReminder] = useState(habit.reminder ?? "");
   const [error, setError] = useState<string | null>(null);
   const done = isCheckedIn(habit, today);
+  const streak = currentStreak(habit.checkIns, today);
+  const best = bestStreak(habit.checkIns);
 
   function startEdit() {
     setValue(habit.name);
@@ -242,6 +245,17 @@ function HabitRow({
           </button>
           {habit.emoji ? <span aria-hidden="true">{habit.emoji}</span> : null}
           <span className="min-w-0 flex-1 break-words">{habit.name}</span>
+          <span
+            title={`Best streak: ${best} ${best === 1 ? "day" : "days"}`}
+            className="text-xs text-stone-600 dark:text-stone-400"
+          >
+            <span aria-hidden="true">🔥 </span>
+            <span className="sr-only">Current streak: </span>
+            {streak} {streak === 1 ? "day" : "days"}
+            <span className="ml-1 text-[11px] text-stone-500 dark:text-stone-400">
+              (best {best})
+            </span>
+          </span>
           {habit.reminder ? (
             <span className="text-xs text-stone-500 dark:text-stone-400">
               <span aria-hidden="true">🔔 </span>

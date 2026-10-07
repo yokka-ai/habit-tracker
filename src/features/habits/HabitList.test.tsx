@@ -78,3 +78,50 @@ describe("HabitList check-off", () => {
     expect(onToggle).toHaveBeenCalledWith(read.id);
   });
 });
+
+describe("HabitList streaks", () => {
+  const withDays = (checkIns: string[]): Habit => ({ ...createHabit("Walk"), checkIns });
+  const renderList = (list: Habit[]) =>
+    render(
+      <HabitList
+        habits={list}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onArchive={vi.fn()}
+        onMove={vi.fn()}
+        onToggle={vi.fn()}
+        onSetReminder={vi.fn()}
+        today="2026-10-05"
+      />,
+    );
+
+  it("shows the current and best streak", () => {
+    renderList([withDays(["2026-09-01", "2026-09-02", "2026-09-03", "2026-10-04", "2026-10-05"])]);
+    expect(screen.getByText(/Current streak:/).parentElement).toHaveTextContent("2 days");
+    expect(screen.getByText("(best 3)")).toBeInTheDocument();
+  });
+
+  it("shows 0 days for a habit with no check-ins", () => {
+    renderList([withDays([])]);
+    expect(screen.getByText(/Current streak:/).parentElement).toHaveTextContent("0 days");
+  });
+
+  it("updates when today is checked in", () => {
+    const yesterday = withDays(["2026-10-04"]);
+    const { rerender } = renderList([yesterday]);
+    expect(screen.getByText(/Current streak:/).parentElement).toHaveTextContent("1 day");
+    rerender(
+      <HabitList
+        habits={[{ ...yesterday, checkIns: ["2026-10-04", "2026-10-05"] }]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onArchive={vi.fn()}
+        onMove={vi.fn()}
+        onToggle={vi.fn()}
+        onSetReminder={vi.fn()}
+        today="2026-10-05"
+      />,
+    );
+    expect(screen.getByText(/Current streak:/).parentElement).toHaveTextContent("2 days");
+  });
+});
