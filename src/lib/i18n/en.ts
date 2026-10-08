@@ -93,6 +93,7 @@ export const en = {
   "habit.bestStreak": "Best streak: {count} {unit}",
   "habit.currentStreak": "Current streak: ",
   "habit.best": "(best {count})",
+  "celebrate.streak": "{count} days in a row!",
   "habit.reminderAt": "Reminder at ",
   "habit.confirmDelete": "Delete this habit?",
   "habit.confirmDeleteAria": "Confirm delete {name}",

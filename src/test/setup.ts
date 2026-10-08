@@ -6,3 +6,6 @@ afterEach(() => {
   cleanup();
   window.localStorage.clear();
 });
+
+// jsdom has no canvas; the confetti effect then skips drawing.
+HTMLCanvasElement.prototype.getContext = () => null;

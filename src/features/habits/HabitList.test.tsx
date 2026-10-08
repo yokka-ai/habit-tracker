@@ -125,3 +125,46 @@ describe("HabitList streaks", () => {
     expect(screen.getByText(/Current streak:/).parentElement).toHaveTextContent("2 days");
   });
 });
+
+describe("HabitList streak celebration", () => {
+  const days = (from: number, count: number) =>
+    Array.from({ length: count }, (_, i) => `2026-10-${String(from + i).padStart(2, "0")}`);
+
+  function renderWith(checkIns: string[]) {
+    const habit: Habit = { ...createHabit("Stretch"), checkIns };
+    const ui = (h: Habit) => (
+      <HabitList
+        habits={[h]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onArchive={vi.fn()}
+        onMove={vi.fn()}
+        onToggle={vi.fn()}
+        onSetReminder={vi.fn()}
+        today="2026-10-07"
+      />
+    );
+    const view = render(ui(habit));
+    return {
+      habit,
+      rerender: (checks: string[]) => view.rerender(ui({ ...habit, checkIns: checks })),
+    };
+  }
+
+  it("shows the message, without confetti, when reduced motion is preferred", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    const { rerender } = renderWith(days(1, 6));
+    expect(screen.queryByRole("status")).toBeNull();
+    rerender(days(1, 7));
+    expect(screen.getByRole("status")).toHaveTextContent("7 days in a row!");
+    expect(document.querySelector("canvas")).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it("stays quiet on load and on streaks that are not milestones", () => {
+    const { rerender } = renderWith(days(1, 7));
+    expect(screen.queryByRole("status")).toBeNull();
+    rerender([...days(1, 7), "2026-10-08"]);
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+});

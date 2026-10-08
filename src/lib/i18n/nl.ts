@@ -95,6 +95,7 @@ export const nl: Record<MessageKey, string> = {
   "habit.bestStreak": "Beste reeks: {count} {unit}",
   "habit.currentStreak": "Huidige reeks: ",
   "habit.best": "(beste {count})",
+  "celebrate.streak": "{count} dagen op rij!",
   "habit.reminderAt": "Herinnering om ",
   "habit.confirmDelete": "Deze gewoonte verwijderen?",
   "habit.confirmDeleteAria": "Verwijderen van {name} bevestigen",

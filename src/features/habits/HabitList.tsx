@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useState } from "react";
+import { type KeyboardEvent, useCallback, useRef, useState } from "react";
 import { type HabitColor, normalizeEmoji, paletteEntry } from "../../lib/appearance.ts";
 import { normalizeCategory } from "../../lib/category.ts";
 import {
@@ -8,11 +8,13 @@ import {
   validateHabitName,
 } from "../../lib/habit.ts";
 import { type Message, plural, translateMessage } from "../../lib/i18n/index.ts";
+import { reachedMilestone } from "../../lib/milestone.ts";
 import { bestStreak, currentStreak } from "../../lib/streak.ts";
 
 import { useI18n } from "../i18n/I18nProvider.tsx";
 import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
+import { Celebration } from "./Celebration.tsx";
 
 type Props = {
   habits: Habit[];
@@ -114,6 +116,14 @@ function HabitRow({
   const streak = currentStreak(habit.checkIns, today);
   const best = bestStreak(habit.checkIns);
   const days = (count: number) => plural(locale, "unit.day", count);
+  const [celebrating, setCelebrating] = useState<number | null>(null);
+  const previousStreak = useRef(streak);
+  if (previousStreak.current !== streak) {
+    const milestone = reachedMilestone(previousStreak.current, streak);
+    previousStreak.current = streak;
+    if (milestone !== null) setCelebrating(milestone);
+  }
+  const endCelebration = useCallback(() => setCelebrating(null), []);
 
   function startEdit() {
     setValue(habit.name);
@@ -261,6 +271,7 @@ function HabitRow({
               {t("habit.best", { count: best })}
             </span>
           </span>
+          {celebrating !== null ? <Celebration days={celebrating} onDone={endCelebration} /> : null}
           {habit.reminder ? (
             <span className="text-xs text-stone-500 dark:text-stone-400">
               <span aria-hidden="true">🔔 </span>
