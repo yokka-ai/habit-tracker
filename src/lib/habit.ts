@@ -1,4 +1,5 @@
 import { DEFAULT_COLOR, type HabitColor } from "./appearance.ts";
+import type { Message } from "./i18n/index.ts";
 
 export type Habit = {
   id: string;
@@ -18,15 +19,18 @@ export type Appearance = { color: HabitColor; emoji?: string };
 
 export const MAX_HABIT_NAME_LENGTH = 60;
 
-export type NameResult = { ok: true; name: string } | { ok: false; error: string };
+export type NameResult = { ok: true; name: string } | { ok: false; error: Message };
 
 export function validateHabitName(input: string): NameResult {
   const name = input.trim();
   if (name.length === 0) {
-    return { ok: false, error: "Enter a habit name." };
+    return { ok: false, error: { key: "form.error.empty" } };
   }
   if (name.length > MAX_HABIT_NAME_LENGTH) {
-    return { ok: false, error: `Keep the name to ${MAX_HABIT_NAME_LENGTH} characters or fewer.` };
+    return {
+      ok: false,
+      error: { key: "form.error.tooLong", params: { max: MAX_HABIT_NAME_LENGTH } },
+    };
   }
   return { ok: true, name };
 }

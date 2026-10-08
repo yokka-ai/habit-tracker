@@ -15,12 +15,7 @@ export async function ensureNotificationPermission(): Promise<PermissionState> {
   }
 }
 
-export const DENIED_HELP =
-  "Notifications are blocked, so reminders can't show. Allow notifications for this site in your browser's site settings, then set the reminder again.";
-export const UNSUPPORTED_HELP =
-  "This browser does not support notifications, so reminders can't show.";
-
-export function showReminder(name: string): void {
+export function showReminder(title: string, body: string, tag: string): void {
   if (notificationPermission() !== "granted") return;
-  new Notification(`Time for: ${name}`, { body: "You haven't done this habit today.", tag: name });
+  new Notification(title, { body, tag });
 }

@@ -1,11 +1,7 @@
 import type { Habit } from "../../lib/habit.ts";
-import {
-  habitStats,
-  overallStats,
-  RATE_WINDOWS,
-  type Stats,
-  WEEKDAY_NAMES,
-} from "../../lib/stats.ts";
+import { weekdayNameByIndex } from "../../lib/i18n/index.ts";
+import { habitStats, overallStats, RATE_WINDOWS, type Stats } from "../../lib/stats.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 function RateBar({ label, done, possible }: { label: string; done: number; possible: number }) {
   const value = possible === 0 ? null : Math.round((done / possible) * 100);
@@ -21,6 +17,7 @@ function RateBar({ label, done, possible }: { label: string; done: number; possi
 }
 
 function StatsBlock({ title, stats }: { title: string; stats: Stats }) {
+  const { t, locale } = useI18n();
   return (
     <section
       aria-label={title}
@@ -30,28 +27,35 @@ function StatsBlock({ title, stats }: { title: string; stats: Stats }) {
       {RATE_WINDOWS.map((w) => (
         <RateBar
           key={w}
-          label={`Last ${w} days`}
+          label={t("stats.lastDays", { count: w })}
           done={stats.rates[w].done}
           possible={stats.rates[w].possible}
         />
       ))}
       <p className="text-sm text-stone-600 dark:text-stone-400">
-        Current streak {stats.currentStreak} · Best streak {stats.bestStreak} · Strongest day{" "}
-        {stats.strongestWeekday === null ? "–" : WEEKDAY_NAMES[stats.strongestWeekday]}
+        {t("stats.summary", {
+          current: stats.currentStreak,
+          best: stats.bestStreak,
+          day:
+            stats.strongestWeekday === null
+              ? "–"
+              : weekdayNameByIndex(locale, stats.strongestWeekday),
+        })}
       </p>
     </section>
   );
 }
 
 export function StatsPage({ habits, today }: { habits: Habit[]; today: string }) {
+  const { t } = useI18n();
   if (habits.length === 0) {
-    return <p>No stats yet. Add a habit and check it off to see your numbers.</p>;
+    return <p>{t("stats.empty")}</p>;
   }
   const overall = overallStats(habits, today);
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Stats</h2>
-      <StatsBlock title="Overall" stats={overall} />
+      <h2 className="text-lg font-semibold">{t("stats.heading")}</h2>
+      <StatsBlock title={t("stats.overall")} stats={overall} />
       {habits.map((habit) => (
         <StatsBlock key={habit.id} title={habit.name} stats={habitStats(habit, today)} />
       ))}

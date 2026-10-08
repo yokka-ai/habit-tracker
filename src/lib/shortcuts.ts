@@ -1,3 +1,5 @@
+import type { MessageKey } from "./i18n/index.ts";
+
 export type ShortcutAction =
   | { type: "focus-new-habit" }
   | { type: "toggle-habit"; position: number }
@@ -13,10 +15,10 @@ export type ShortcutKeyEvent = {
   target: EventTarget | null;
 };
 
-export const SHORTCUT_LIST: { keys: string; description: string }[] = [
-  { keys: "n", description: "Focus the new habit field" },
-  { keys: "1 – 9", description: "Toggle today for the habit in that position" },
-  { keys: "?", description: "Show this list of shortcuts" },
+export const SHORTCUT_LIST: { keys: string; description: MessageKey }[] = [
+  { keys: "n", description: "shortcuts.focusNew" },
+  { keys: "1 – 9", description: "shortcuts.toggle" },
+  { keys: "?", description: "shortcuts.help" },
 ];
 
 const TYPING_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);

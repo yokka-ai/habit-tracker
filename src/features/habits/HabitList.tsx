@@ -7,8 +7,10 @@ import {
   MAX_HABIT_NAME_LENGTH,
   validateHabitName,
 } from "../../lib/habit.ts";
+import { type Message, plural, translateMessage } from "../../lib/i18n/index.ts";
 import { bestStreak, currentStreak } from "../../lib/streak.ts";
 
+import { useI18n } from "../i18n/I18nProvider.tsx";
 import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
 
@@ -36,9 +38,10 @@ export function HabitList({
   onSetReminder,
   today,
 }: Props) {
+  const { t } = useI18n();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   return (
-    <ul aria-label="Habits" className="space-y-2">
+    <ul aria-label={t("habits.list")} className="space-y-2">
       {habits.map((habit, index) => {
         const prev = habits[index - 1];
         const next = habits[index + 1];
@@ -99,16 +102,18 @@ function HabitRow({
   onDropOn,
   dragging,
 }: RowProps) {
+  const { t, locale } = useI18n();
   const [mode, setMode] = useState<"view" | "edit" | "confirm">("view");
   const [value, setValue] = useState(habit.name);
   const [category, setCategory] = useState(habit.category ?? "");
   const [color, setColor] = useState<HabitColor>(habit.color);
   const [emoji, setEmoji] = useState(habit.emoji ?? "");
   const [reminder, setReminder] = useState(habit.reminder ?? "");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Message | null>(null);
   const done = isCheckedIn(habit, today);
   const streak = currentStreak(habit.checkIns, today);
   const best = bestStreak(habit.checkIns);
+  const days = (count: number) => plural(locale, "unit.day", count);
 
   function startEdit() {
     setValue(habit.name);
@@ -153,7 +158,7 @@ function HabitRow({
         <div>
           <div className="flex gap-2">
             <label htmlFor={`rename-${habit.id}`} className="sr-only">
-              Rename habit
+              {t("habit.rename")}
             </label>
             <input
               id={`rename-${habit.id}`}
@@ -174,10 +179,10 @@ function HabitRow({
               className="w-32 rounded-lg border border-stone-300 bg-white px-3 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100"
             />
             <button type="button" onClick={save} className={buttonClass}>
-              Save
+              {t("habit.save")}
             </button>
             <button type="button" onClick={() => setMode("view")} className={buttonClass}>
-              Cancel
+              {t("habit.cancel")}
             </button>
           </div>
           <AppearancePicker
@@ -188,7 +193,7 @@ function HabitRow({
             onEmoji={setEmoji}
           />
           <div className="mt-2 flex items-center gap-2 text-sm">
-            <label htmlFor={`reminder-${habit.id}`}>Reminder time</label>
+            <label htmlFor={`reminder-${habit.id}`}>{t("habit.reminderTime")}</label>
             <input
               id={`reminder-${habit.id}`}
               type="time"
@@ -199,7 +204,7 @@ function HabitRow({
             />
             {reminder ? (
               <button type="button" onClick={() => setReminder("")} className={buttonClass}>
-                Clear reminder
+                {t("habit.clearReminder")}
               </button>
             ) : null}
           </div>
@@ -209,7 +214,7 @@ function HabitRow({
               role="alert"
               className="mt-2 text-sm text-red-700 dark:text-red-400"
             >
-              {error}
+              {translateMessage(t, error)}
             </p>
           ) : null}
         </div>
@@ -223,7 +228,7 @@ function HabitRow({
               onDragStart();
             }}
             onDragEnd={onDragEnd}
-            title="Drag to reorder"
+            title={t("habit.dragToReorder")}
             data-drag-handle={habit.name}
             aria-hidden="true"
             className="cursor-grab select-none px-1 text-stone-400"
@@ -238,7 +243,7 @@ function HabitRow({
             type="button"
             onClick={() => onToggle(habit.id)}
             aria-pressed={done}
-            aria-label={`Done today: ${habit.name}`}
+            aria-label={t("habit.doneToday", { name: habit.name })}
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${done ? "border-emerald-600 bg-emerald-600 text-white" : "border-stone-300 bg-white dark:border-stone-600 dark:bg-stone-900"}`}
           >
             <span aria-hidden="true">{done ? "✓" : ""}</span>
@@ -246,20 +251,20 @@ function HabitRow({
           {habit.emoji ? <span aria-hidden="true">{habit.emoji}</span> : null}
           <span className="min-w-0 flex-1 break-words">{habit.name}</span>
           <span
-            title={`Best streak: ${best} ${best === 1 ? "day" : "days"}`}
+            title={t("habit.bestStreak", { count: best, unit: days(best) })}
             className="text-xs text-stone-600 dark:text-stone-400"
           >
             <span aria-hidden="true">🔥 </span>
-            <span className="sr-only">Current streak: </span>
-            {streak} {streak === 1 ? "day" : "days"}
+            <span className="sr-only">{t("habit.currentStreak")}</span>
+            {streak} {days(streak)}
             <span className="ml-1 text-[11px] text-stone-500 dark:text-stone-400">
-              (best {best})
+              {t("habit.best", { count: best })}
             </span>
           </span>
           {habit.reminder ? (
             <span className="text-xs text-stone-500 dark:text-stone-400">
               <span aria-hidden="true">🔔 </span>
-              <span className="sr-only">Reminder at </span>
+              <span className="sr-only">{t("habit.reminderAt")}</span>
               {habit.reminder}
             </span>
           ) : null}
@@ -270,17 +275,17 @@ function HabitRow({
           ) : null}
           {mode === "confirm" ? (
             <>
-              <span className="text-sm">Delete this habit?</span>
+              <span className="text-sm">{t("habit.confirmDelete")}</span>
               <button
                 type="button"
                 onClick={() => onDelete(habit.id)}
-                aria-label={`Confirm delete ${habit.name}`}
+                aria-label={t("habit.confirmDeleteAria", { name: habit.name })}
                 className={buttonClass}
               >
-                Delete
+                {t("habit.delete")}
               </button>
               <button type="button" onClick={() => setMode("view")} className={buttonClass}>
-                Keep
+                {t("habit.keep")}
               </button>
             </>
           ) : (
@@ -289,7 +294,7 @@ function HabitRow({
                 type="button"
                 onClick={onMoveUp}
                 disabled={!onMoveUp}
-                aria-label={`Move up ${habit.name}`}
+                aria-label={t("habit.moveUp", { name: habit.name })}
                 className={`${buttonClass} disabled:opacity-40`}
               >
                 ↑
@@ -298,7 +303,7 @@ function HabitRow({
                 type="button"
                 onClick={onMoveDown}
                 disabled={!onMoveDown}
-                aria-label={`Move down ${habit.name}`}
+                aria-label={t("habit.moveDown", { name: habit.name })}
                 className={`${buttonClass} disabled:opacity-40`}
               >
                 ↓
@@ -306,26 +311,26 @@ function HabitRow({
               <button
                 type="button"
                 onClick={startEdit}
-                aria-label={`Edit ${habit.name}`}
+                aria-label={t("habit.editAria", { name: habit.name })}
                 className={buttonClass}
               >
-                Edit
+                {t("habit.edit")}
               </button>
               <button
                 type="button"
                 onClick={() => onArchive(habit.id)}
-                aria-label={`Archive ${habit.name}`}
+                aria-label={t("habit.archiveAria", { name: habit.name })}
                 className={buttonClass}
               >
-                Archive
+                {t("habit.archive")}
               </button>
               <button
                 type="button"
                 onClick={() => setMode("confirm")}
-                aria-label={`Delete ${habit.name}`}
+                aria-label={t("habit.deleteAria", { name: habit.name })}
                 className={buttonClass}
               >
-                Delete
+                {t("habit.delete")}
               </button>
             </>
           )}

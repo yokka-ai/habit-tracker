@@ -2,14 +2,14 @@ import type { Habit } from "./habit.ts";
 
 /** Fixed palette. Each fill is a -700 shade, so white text on it keeps 4.5:1 contrast or better. */
 export const PALETTE = [
-  { id: "emerald", label: "Green", fill: "bg-emerald-700", ring: "border-emerald-700" },
-  { id: "sky", label: "Blue", fill: "bg-sky-700", ring: "border-sky-700" },
-  { id: "violet", label: "Purple", fill: "bg-violet-700", ring: "border-violet-700" },
-  { id: "pink", label: "Pink", fill: "bg-pink-700", ring: "border-pink-700" },
-  { id: "red", label: "Red", fill: "bg-red-700", ring: "border-red-700" },
-  { id: "orange", label: "Orange", fill: "bg-orange-700", ring: "border-orange-700" },
-  { id: "amber", label: "Amber", fill: "bg-amber-700", ring: "border-amber-700" },
-  { id: "teal", label: "Teal", fill: "bg-teal-700", ring: "border-teal-700" },
+  { id: "emerald", fill: "bg-emerald-700", ring: "border-emerald-700" },
+  { id: "sky", fill: "bg-sky-700", ring: "border-sky-700" },
+  { id: "violet", fill: "bg-violet-700", ring: "border-violet-700" },
+  { id: "pink", fill: "bg-pink-700", ring: "border-pink-700" },
+  { id: "red", fill: "bg-red-700", ring: "border-red-700" },
+  { id: "orange", fill: "bg-orange-700", ring: "border-orange-700" },
+  { id: "amber", fill: "bg-amber-700", ring: "border-amber-700" },
+  { id: "teal", fill: "bg-teal-700", ring: "border-teal-700" },
 ] as const;
 
 export type HabitColor = (typeof PALETTE)[number]["id"];

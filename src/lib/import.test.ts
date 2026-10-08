@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toCsv, toJson } from "./export.ts";
 import type { Habit } from "./habit.ts";
-import { formatSummary, isValidDay, mergeCsv, parseJsonBackup } from "./import.ts";
+import { isValidDay, mergeCsv, parseJsonBackup } from "./import.ts";
 
 const water: Habit & { checkIns: string[] } = {
   id: "1",
@@ -90,15 +90,8 @@ describe("mergeCsv", () => {
     expect(mergeCsv("habit,date\n,2026-10-01\n", [])).toMatchObject({ ok: false });
     expect(mergeCsv("habit,date\nA,2026-02-30\n", [])).toMatchObject({
       ok: false,
-      error: 'Row 2 has an invalid date "2026-02-30".',
+      error: { key: "import.error.csvDate", params: { row: 2, date: "2026-02-30" } },
     });
     expect(mergeCsv('habit,date\n"A,2026-10-01\n', [])).toMatchObject({ ok: false });
-  });
-});
-
-describe("formatSummary", () => {
-  it("pluralises", () => {
-    expect(formatSummary({ habits: 3, checkIns: 214 })).toBe("Imported 3 habits, 214 check-ins");
-    expect(formatSummary({ habits: 1, checkIns: 1 })).toBe("Imported 1 habit, 1 check-in");
   });
 });

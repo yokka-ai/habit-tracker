@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { exportFilename, toCsv, toJson } from "../../lib/export.ts";
 import type { Habit } from "../../lib/habit.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = { habits: Habit[] };
 
@@ -17,6 +18,7 @@ function download(filename: string, content: string, type: string) {
 }
 
 export function ExportMenu({ habits }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   const save = (extension: "json" | "csv") => {
@@ -40,15 +42,15 @@ export function ExportMenu({ habits }: Props) {
         }}
         className={BUTTON}
       >
-        Export
+        {t("export.button")}
       </button>
       {open ? (
         <div className="absolute right-0 z-10 mt-1 flex w-44 flex-col gap-1 rounded-lg border border-stone-300 bg-white p-1 shadow-md dark:border-stone-600 dark:bg-stone-900">
           <button type="button" onClick={() => save("json")} className={BUTTON}>
-            Download JSON backup
+            {t("export.json")}
           </button>
           <button type="button" onClick={() => save("csv")} className={BUTTON}>
-            Download CSV
+            {t("export.csv")}
           </button>
         </div>
       ) : null}

@@ -1,4 +1,5 @@
 import { EMOJI_CHOICES, type HabitColor, PALETTE } from "../../lib/appearance.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = {
   idPrefix: string;
@@ -12,10 +13,11 @@ const optionClass =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600";
 
 export function AppearancePicker({ idPrefix, color, emoji, onColor, onEmoji }: Props) {
+  const { t } = useI18n();
   return (
     <div className="mt-2 space-y-2">
       <fieldset>
-        <legend className="sr-only">Colour</legend>
+        <legend className="sr-only">{t("appearance.colour")}</legend>
         <div className="flex flex-wrap gap-1">
           {PALETTE.map((entry) => (
             <label key={entry.id} className="cursor-pointer">
@@ -25,7 +27,7 @@ export function AppearancePicker({ idPrefix, color, emoji, onColor, onEmoji }: P
                 value={entry.id}
                 checked={color === entry.id}
                 onChange={() => onColor(entry.id)}
-                aria-label={entry.label}
+                aria-label={t(`color.${entry.id}`)}
                 className="peer sr-only"
               />
               <span
@@ -37,23 +39,23 @@ export function AppearancePicker({ idPrefix, color, emoji, onColor, onEmoji }: P
         </div>
       </fieldset>
       <fieldset>
-        <legend className="sr-only">Emoji (optional)</legend>
+        <legend className="sr-only">{t("appearance.emoji")}</legend>
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
             aria-pressed={emoji === ""}
-            aria-label="No emoji"
+            aria-label={t("appearance.noEmoji")}
             onClick={() => onEmoji("")}
             className={`rounded-lg border px-2 py-0.5 text-xs aria-pressed:bg-stone-200 dark:aria-pressed:bg-stone-700 border-stone-300 dark:border-stone-600 ${optionClass}`}
           >
-            None
+            {t("appearance.none")}
           </button>
           {EMOJI_CHOICES.map((choice) => (
             <button
               key={choice}
               type="button"
               aria-pressed={emoji === choice}
-              aria-label={`Emoji ${choice}`}
+              aria-label={t("appearance.emojiChoice", { emoji: choice })}
               onClick={() => onEmoji(choice)}
               className={`rounded-lg border border-stone-300 px-1.5 py-0.5 aria-pressed:bg-stone-200 dark:border-stone-600 dark:aria-pressed:bg-stone-700 ${optionClass}`}
             >

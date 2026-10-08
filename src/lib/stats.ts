@@ -4,16 +4,6 @@ import { bestStreak, currentStreak } from "./streak.ts";
 
 export const RATE_WINDOWS = [7, 30, 365] as const;
 
-export const WEEKDAY_NAMES = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-] as const;
-
 export type Rate = { done: number; possible: number };
 
 export type Stats = {

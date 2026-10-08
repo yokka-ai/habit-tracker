@@ -1,4 +1,10 @@
 import { addDays, weekday } from "./dates.ts";
+import {
+  DEFAULT_LOCALE,
+  formatDay,
+  monthName as i18nMonthName,
+  type Locale,
+} from "./i18n/index.ts";
 
 export const HEATMAP_DAYS = 365;
 
@@ -17,33 +23,21 @@ export function buildHeatmapGrid(end: string): HeatmapWeek[] {
   return weeks;
 }
 
-export const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-] as const;
-
 /** Month name for `day`, e.g. "March". */
-export function monthName(day: string): string {
-  return MONTH_NAMES[Number(day.slice(5, 7)) - 1] ?? "";
+export function monthName(day: string, locale: Locale = DEFAULT_LOCALE): string {
+  return i18nMonthName(locale, day);
 }
 
 /** Human label for a day, e.g. "3 March". */
-export function dayLabel(day: string): string {
-  return `${Number(day.slice(8, 10))} ${monthName(day)}`;
+export function dayLabel(day: string, locale: Locale = DEFAULT_LOCALE): string {
+  return formatDay(locale, day);
 }
 
 /** For each week, the month name where a new month starts in that column, else `null`. */
-export function monthLabels(weeks: HeatmapWeek[]): (string | null)[] {
+export function monthLabels(
+  weeks: HeatmapWeek[],
+  locale: Locale = DEFAULT_LOCALE,
+): (string | null)[] {
   let previous = "";
   return weeks.map((week) => {
     const first = week.find((day): day is string => day !== null);
@@ -51,6 +45,6 @@ export function monthLabels(weeks: HeatmapWeek[]): (string | null)[] {
     const month = first.slice(0, 7);
     if (month === previous) return null;
     previous = month;
-    return monthName(first);
+    return monthName(first, locale);
   });
 }

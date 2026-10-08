@@ -7,6 +7,8 @@ import { EmptyState } from "./features/habits/EmptyState.tsx";
 import { HabitList } from "./features/habits/HabitList.tsx";
 import { useReminders } from "./features/habits/useReminders.ts";
 import { YearHeatmap } from "./features/heatmap/YearHeatmap.tsx";
+import { I18nProvider, useI18n } from "./features/i18n/I18nProvider.tsx";
+import { LanguageSwitcher } from "./features/i18n/LanguageSwitcher.tsx";
 import { ImportButton } from "./features/import/ImportButton.tsx";
 import { ShortcutsDialog } from "./features/shortcuts/ShortcutsDialog.tsx";
 import { useKeyboardShortcuts } from "./features/shortcuts/useKeyboardShortcuts.ts";
@@ -39,14 +41,19 @@ import {
   toggleCheckIn,
 } from "./lib/habit.ts";
 import { dayLabel } from "./lib/heatmap.ts";
-import {
-  DENIED_HELP,
-  ensureNotificationPermission,
-  UNSUPPORTED_HELP,
-} from "./lib/notifications.ts";
+import { ensureNotificationPermission } from "./lib/notifications.ts";
 import { loadHabits, saveHabits } from "./lib/storage.ts";
 
 export function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  );
+}
+
+function AppContent() {
+  const { t, locale } = useI18n();
   const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
   useEffect(() => {
     saveHabits(habits);
@@ -76,8 +83,12 @@ export function App() {
   const toggleDay = (id: string, day: string) => {
     const habit = habits.find((h) => h.id === id);
     if (habit) {
-      const verb = isCheckedIn(habit, day) ? "unchecked" : "checked off";
-      setAnnouncement(`${habit.name} ${verb} for ${day === today() ? "today" : dayLabel(day)}`);
+      setAnnouncement(
+        t(isCheckedIn(habit, day) ? "announce.unchecked" : "announce.checked", {
+          name: habit.name,
+          day: day === today() ? t("announce.today") : dayLabel(day, locale),
+        }),
+      );
     }
     setHabits((c) => toggleCheckIn(c, id, day));
   };
@@ -102,8 +113,8 @@ export function App() {
     setReminderNotice(null);
     if (!time) return;
     const permission = await ensureNotificationPermission();
-    if (permission === "denied") setReminderNotice(DENIED_HELP);
-    else if (permission === "unsupported") setReminderNotice(UNSUPPORTED_HELP);
+    if (permission === "denied") setReminderNotice(t("reminder.denied"));
+    else if (permission === "unsupported") setReminderNotice(t("reminder.unsupported"));
   };
   const archive = (id: string) => setHabits((c) => archiveHabit(c, id));
   const restore = (id: string) => setHabits((c) => restoreHabit(c, id));
@@ -115,7 +126,7 @@ export function App() {
           <span aria-hidden="true" className="text-2xl">
             ✅
           </span>
-          <h1 className="text-xl font-semibold tracking-tight">Habit Tracker</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t("app.title")}</h1>
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
@@ -123,10 +134,11 @@ export function App() {
               onClick={() => setShowStats((s) => !s)}
               className="rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 aria-pressed:bg-emerald-600 aria-pressed:text-white dark:border-stone-600 dark:hover:bg-stone-800"
             >
-              Stats
+              {t("header.stats")}
             </button>
             <ImportButton habits={habits} onReplace={setHabits} />
             <ExportMenu habits={habits} />
+            <LanguageSwitcher />
             <ThemeToggle preference={theme.preference} onCycle={theme.cycle} />
           </div>
         </div>
@@ -151,7 +163,7 @@ export function App() {
               <CategoryFilter categories={categories} selected={filter} onSelect={selectFilter} />
             ) : null}
             <fieldset className="mb-4 flex gap-2">
-              <legend className="sr-only">View</legend>
+              <legend className="sr-only">{t("view.legend")}</legend>
               {(["today", "week"] as const).map((v) => (
                 <button
                   key={v}
@@ -160,7 +172,7 @@ export function App() {
                   onClick={() => setView(v)}
                   className="rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 aria-pressed:bg-emerald-600 aria-pressed:text-white dark:border-stone-600 dark:hover:bg-stone-800"
                 >
-                  {v === "today" ? "Today" : "Week"}
+                  {v === "today" ? t("view.today") : t("view.week")}
                 </button>
               ))}
             </fieldset>
@@ -180,7 +192,7 @@ export function App() {
             )}
             <section aria-labelledby="year-heading" className="mt-10 space-y-4">
               <h2 id="year-heading" className="text-lg font-semibold">
-                Past year
+                {t("heatmap.heading")}
               </h2>
               {visible.map((habit) => (
                 <YearHeatmap key={habit.id} habit={habit} today={today()} />

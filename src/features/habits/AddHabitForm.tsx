@@ -2,17 +2,20 @@ import { type FormEvent, useState } from "react";
 import { DEFAULT_COLOR, type HabitColor, normalizeEmoji } from "../../lib/appearance.ts";
 import { normalizeCategory } from "../../lib/category.ts";
 import { type Appearance, MAX_HABIT_NAME_LENGTH, validateHabitName } from "../../lib/habit.ts";
+import { type Message, translateMessage } from "../../lib/i18n/index.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 import { AppearancePicker } from "./AppearancePicker.tsx";
 import { CategoryInput } from "./CategoryInput.tsx";
 
 type Props = { onAdd: (name: string, category?: string, appearance?: Appearance) => void };
 
 export function AddHabitForm({ onAdd }: Props) {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState<HabitColor>(DEFAULT_COLOR);
   const [emoji, setEmoji] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Message | null>(null);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -33,14 +36,14 @@ export function AddHabitForm({ onAdd }: Props) {
     <form onSubmit={handleSubmit} noValidate className="mb-6">
       <div className="flex gap-2">
         <label htmlFor="habit-name" className="sr-only">
-          Habit name
+          {t("form.nameLabel")}
         </label>
         <input
           id="habit-name"
           type="text"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Drink water"
+          placeholder={t("form.namePlaceholder")}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? "habit-name-error" : undefined}
           className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-emerald-600"
@@ -55,7 +58,7 @@ export function AddHabitForm({ onAdd }: Props) {
           type="submit"
           className="rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
         >
-          Add
+          {t("form.add")}
         </button>
       </div>
       <AppearancePicker
@@ -71,10 +74,10 @@ export function AddHabitForm({ onAdd }: Props) {
           role="alert"
           className="mt-2 text-sm text-red-700 dark:text-red-400"
         >
-          {error}
+          {translateMessage(t, error)}
         </p>
       ) : null}
-      <p className="sr-only">Up to {MAX_HABIT_NAME_LENGTH} characters.</p>
+      <p className="sr-only">{t("form.maxLength", { max: MAX_HABIT_NAME_LENGTH })}</p>
     </form>
   );
 }

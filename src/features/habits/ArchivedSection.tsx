@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Habit } from "../../lib/habit.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = {
   habits: Habit[];
@@ -11,6 +12,7 @@ const buttonClass =
   "rounded-lg border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-stone-600 dark:hover:bg-stone-800";
 
 export function ArchivedSection({ habits, onRestore, onDelete }: Props) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -25,10 +27,10 @@ export function ArchivedSection({ habits, onRestore, onDelete }: Props) {
         aria-controls="archived-habits"
         className={buttonClass}
       >
-        Archived ({habits.length})
+        {t("archived.button", { count: habits.length })}
       </button>
       {open ? (
-        <ul id="archived-habits" aria-label="Archived habits" className="mt-3 space-y-2">
+        <ul id="archived-habits" aria-label={t("archived.list")} className="mt-3 space-y-2">
           {habits.map((habit) => (
             <li
               key={habit.id}
@@ -37,20 +39,20 @@ export function ArchivedSection({ habits, onRestore, onDelete }: Props) {
               <span className="min-w-0 flex-1 break-words">{habit.name}</span>
               {confirming === habit.id ? (
                 <>
-                  <span className="text-sm">Delete this habit?</span>
+                  <span className="text-sm">{t("habit.confirmDelete")}</span>
                   <button
                     type="button"
                     onClick={() => {
                       setConfirming(null);
                       onDelete(habit.id);
                     }}
-                    aria-label={`Confirm delete ${habit.name}`}
+                    aria-label={t("habit.confirmDeleteAria", { name: habit.name })}
                     className={buttonClass}
                   >
-                    Delete
+                    {t("habit.delete")}
                   </button>
                   <button type="button" onClick={() => setConfirming(null)} className={buttonClass}>
-                    Keep
+                    {t("habit.keep")}
                   </button>
                 </>
               ) : (
@@ -58,18 +60,18 @@ export function ArchivedSection({ habits, onRestore, onDelete }: Props) {
                   <button
                     type="button"
                     onClick={() => onRestore(habit.id)}
-                    aria-label={`Restore ${habit.name}`}
+                    aria-label={t("archived.restoreAria", { name: habit.name })}
                     className={buttonClass}
                   >
-                    Restore
+                    {t("archived.restore")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirming(habit.id)}
-                    aria-label={`Delete ${habit.name}`}
+                    aria-label={t("habit.deleteAria", { name: habit.name })}
                     className={buttonClass}
                   >
-                    Delete
+                    {t("habit.delete")}
                   </button>
                 </>
               )}

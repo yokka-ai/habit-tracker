@@ -1,16 +1,18 @@
 import { paletteEntry } from "../../lib/appearance.ts";
 import { type Habit, isCheckedIn } from "../../lib/habit.ts";
 import { buildHeatmapGrid, dayLabel, monthLabels } from "../../lib/heatmap.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = { habit: Habit; today: string };
 
 export function YearHeatmap({ habit, today }: Props) {
+  const { t, locale } = useI18n();
   const weeks = buildHeatmapGrid(today);
-  const labels = monthLabels(weeks);
+  const labels = monthLabels(weeks, locale);
   const done = new Set(habit.checkIns ?? []);
   const fill = paletteEntry(habit.color).fill;
   return (
-    <section aria-label={`Past year: ${habit.name}`} className="overflow-x-auto">
+    <section aria-label={t("heatmap.section", { name: habit.name })} className="overflow-x-auto">
       <h3 className="mb-1 text-sm font-medium">
         {habit.emoji ? <span aria-hidden="true">{habit.emoji} </span> : null}
         {habit.name}
@@ -26,8 +28,12 @@ export function YearHeatmap({ habit, today }: Props) {
                 <span
                   key={day}
                   role="img"
-                  title={`${dayLabel(day)}: ${done.has(day) ? "done" : "not done"}`}
-                  aria-label={`${dayLabel(day)}: ${isCheckedIn(habit, day) ? "done" : "not done"}`}
+                  title={t(done.has(day) ? "heatmap.done" : "heatmap.notDone", {
+                    day: dayLabel(day, locale),
+                  })}
+                  aria-label={t(isCheckedIn(habit, day) ? "heatmap.done" : "heatmap.notDone", {
+                    day: dayLabel(day, locale),
+                  })}
                   className={`h-2.5 w-2.5 rounded-sm ${done.has(day) ? fill : "bg-stone-200 dark:bg-stone-800"}`}
                 />
               ) : (

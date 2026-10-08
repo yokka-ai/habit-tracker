@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { useId } from "react";
 import { MAX_CATEGORY_LENGTH, PRESET_CATEGORIES } from "../../lib/category.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = {
   id: string;
@@ -12,11 +13,12 @@ type Props = {
 
 /** Free text with the preset categories offered as suggestions, so custom ones work too. */
 export function CategoryInput({ id, value, onChange, onKeyDown, className }: Props) {
+  const { t } = useI18n();
   const listId = useId();
   return (
     <>
       <label htmlFor={id} className="sr-only">
-        Category (optional)
+        {t("category.label")}
       </label>
       <input
         id={id}
@@ -26,7 +28,7 @@ export function CategoryInput({ id, value, onChange, onKeyDown, className }: Pro
         maxLength={MAX_CATEGORY_LENGTH}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={onKeyDown}
-        placeholder="Category"
+        placeholder={t("category.placeholder")}
         className={className}
       />
       <datalist id={listId}>

@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import type { Habit } from "../../lib/habit.ts";
-import { formatSummary, mergeCsv, parseJsonBackup } from "../../lib/import.ts";
+import { plural, translateMessage } from "../../lib/i18n/index.ts";
+import { mergeCsv, parseJsonBackup } from "../../lib/import.ts";
+import { useI18n } from "../i18n/I18nProvider.tsx";
 
 type Props = { habits: Habit[]; onReplace: (habits: Habit[]) => void };
 
@@ -10,6 +12,7 @@ const BUTTON =
 type Message = { kind: "ok" | "error"; text: string };
 
 export function ImportButton({ habits, onReplace }: Props) {
+  const { t, locale } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<Message | null>(null);
 
@@ -19,29 +22,35 @@ export function ImportButton({ habits, onReplace }: Props) {
     const isCsv = file.name.toLowerCase().endsWith(".csv");
     const result = isCsv ? mergeCsv(text, habits) : parseJsonBackup(text);
     if (!result.ok) {
-      setMessage({ kind: "error", text: `Nothing was imported. ${result.error}` });
+      setMessage({
+        kind: "error",
+        text: t("import.failed", { error: translateMessage(t, result.error) }),
+      });
       return;
     }
-    if (
-      !isCsv &&
-      !window.confirm("Importing this backup replaces all your current habits. Continue?")
-    ) {
+    if (!isCsv && !window.confirm(t("import.confirm"))) {
       return;
     }
     onReplace(result.habits);
-    setMessage({ kind: "ok", text: formatSummary(result.summary) });
+    setMessage({
+      kind: "ok",
+      text: t("import.summary", {
+        habits: plural(locale, "import.habits", result.summary.habits),
+        checkIns: plural(locale, "import.checkIns", result.summary.checkIns),
+      }),
+    });
   };
 
   return (
     <div className="relative">
       <button type="button" onClick={() => input.current?.click()} className={BUTTON}>
-        Import
+        {t("import.button")}
       </button>
       <input
         ref={input}
         type="file"
         accept=".json,.csv,application/json,text/csv"
-        aria-label="Import file"
+        aria-label={t("import.fileLabel")}
         className="sr-only"
         tabIndex={-1}
         onChange={(e) => {
