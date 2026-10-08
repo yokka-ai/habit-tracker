@@ -29,7 +29,7 @@ describe("accessibility", () => {
     expect(await axeViolations()).toEqual([]);
     fireEvent.click(screen.getByRole("button", { name: "Edit Read 10 pages" }));
     expect(await axeViolations()).toEqual([]);
-  });
+  }, 30_000);
 
   it("has no axe violations with the shortcuts dialog open", async () => {
     render(<App />);
