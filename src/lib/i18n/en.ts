@@ -123,6 +123,8 @@ export const en = {
 
   "stats.heading": "Stats",
   "stats.empty": "No stats yet. Add a habit and check it off to see your numbers.",
+  "stats.archived": "Archived",
+  "stats.includeArchived": "Include archived habits",
   "stats.overall": "Overall",
   "stats.lastDays": "Last {count} days",
   "stats.summary": "Current streak {current} · Best streak {best} · Strongest day {day}",

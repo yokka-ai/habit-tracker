@@ -126,6 +126,8 @@ export const nl: Record<MessageKey, string> = {
   "stats.heading": "Statistieken",
   "stats.empty":
     "Nog geen statistieken. Voeg een gewoonte toe en vink die af om je cijfers te zien.",
+  "stats.archived": "Gearchiveerd",
+  "stats.includeArchived": "Gearchiveerde gewoonten meetellen",
   "stats.overall": "Totaal",
   "stats.lastDays": "Laatste {count} dagen",
   "stats.summary": "Huidige reeks {current} · Beste reeks {best} · Sterkste dag {day}",

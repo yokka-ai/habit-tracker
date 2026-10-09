@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Habit } from "../../lib/habit.ts";
 import { weekdayNameByIndex } from "../../lib/i18n/index.ts";
 import { habitStats, overallStats, RATE_WINDOWS, type Stats } from "../../lib/stats.ts";
@@ -16,14 +17,29 @@ function RateBar({ label, done, possible }: { label: string; done: number; possi
   );
 }
 
-function StatsBlock({ title, stats }: { title: string; stats: Stats }) {
+function StatsBlock({
+  title,
+  stats,
+  archived,
+}: {
+  title: string;
+  stats: Stats;
+  archived?: boolean;
+}) {
   const { t, locale } = useI18n();
   return (
     <section
       aria-label={title}
       className="space-y-2 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
     >
-      <h3 className="font-semibold">{title}</h3>
+      <h3 className="font-semibold">
+        {title}
+        {archived && (
+          <span className="ml-2 rounded bg-stone-200 px-1.5 py-0.5 text-xs font-normal dark:bg-stone-700">
+            {t("stats.archived")}
+          </span>
+        )}
+      </h3>
       {RATE_WINDOWS.map((w) => (
         <RateBar
           key={w}
@@ -48,16 +64,33 @@ function StatsBlock({ title, stats }: { title: string; stats: Stats }) {
 
 export function StatsPage({ habits, today }: { habits: Habit[]; today: string }) {
   const { t } = useI18n();
+  const [includeArchived, setIncludeArchived] = useState(false);
   if (habits.length === 0) {
     return <p>{t("stats.empty")}</p>;
   }
-  const overall = overallStats(habits, today);
+  const overall = overallStats(
+    includeArchived ? habits : habits.filter((habit) => !habit.archived),
+    today,
+  );
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">{t("stats.heading")}</h2>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={includeArchived}
+          onChange={(event) => setIncludeArchived(event.target.checked)}
+        />
+        {t("stats.includeArchived")}
+      </label>
       <StatsBlock title={t("stats.overall")} stats={overall} />
       {habits.map((habit) => (
-        <StatsBlock key={habit.id} title={habit.name} stats={habitStats(habit, today)} />
+        <StatsBlock
+          key={habit.id}
+          title={habit.name}
+          stats={habitStats(habit, today)}
+          archived={habit.archived}
+        />
       ))}
     </div>
   );
